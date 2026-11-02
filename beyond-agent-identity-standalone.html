@@ -1,0 +1,1244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Beyond Agent Identity</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Martian+Mono:wdth,wght@75..112.5,400..700&family=Public+Sans:ital,wght@0,400..700;1,400..700&display=swap">
+<style>
+/* Layout: a fixed 1280x720 presentation stage scaled to the window. Colour carries the story:
+   indigo = identity (who may act), vermilion = attack (where it breaks), emerald = runtime monitor (the fix). */
+:root {
+  --desk: #E3E7EB;
+  --paper: #FFFFFF;
+  --wash: #F3F5F8;
+  --line: #DCE1E7;
+  --ink: #0E1620;
+  --ink-2: #4A5664;
+  --ink-3: #85919E;
+  --idn: #3743D1;
+  --idn-soft: #ECEEFD;
+  --thr: #D9452E;
+  --thr-soft: #FCEBE7;
+  --mon: #0B8C60;
+  --mon-soft: #E1F3EB;
+  --amb: #A86300;
+  --amb-soft: #FCF0DA;
+  --vio: #6C45CF;
+  --vio-soft: #F0EAFC;
+  --on-accent: #FFFFFF;
+  --hub: #111B26;
+  --on-hub: #FFFFFF;
+  --card: #0F1822;
+  --on-card: #EEF2F5;
+  --card-muted: #98A6B3;
+  --card-line: #25323E;
+  --card-accent: #5BE0A8;
+  --shadow: 0 1px 2px rgba(14, 22, 32, 0.06), 0 18px 48px rgba(14, 22, 32, 0.13);
+  --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Public Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --f-mono: "Martian Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --desk: #05090D; --paper: #0E151C; --wash: #141D26; --line: #243140;
+    --ink: #E6ECF1; --ink-2: #A3B0BD; --ink-3: #6E7C8A;
+    --idn: #8E96FF; --idn-soft: #1B1F4A;
+    --thr: #FF7E68; --thr-soft: #3A1B16;
+    --mon: #3DD39A; --mon-soft: #0D2D22;
+    --amb: #F2B54A; --amb-soft: #352710;
+    --vio: #B59DFF; --vio-soft: #241A44;
+    --on-accent: #0B1219;
+    --hub: #E9EEF3; --on-hub: #0E151C;
+    --card: #182430; --on-card: #EEF2F5; --card-muted: #9AA8B4; --card-line: #2C3A47; --card-accent: #5BE0A8;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 18px 48px rgba(0, 0, 0, 0.5);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --desk: #05090D; --paper: #0E151C; --wash: #141D26; --line: #243140;
+  --ink: #E6ECF1; --ink-2: #A3B0BD; --ink-3: #6E7C8A;
+  --idn: #8E96FF; --idn-soft: #1B1F4A;
+  --thr: #FF7E68; --thr-soft: #3A1B16;
+  --mon: #3DD39A; --mon-soft: #0D2D22;
+  --amb: #F2B54A; --amb-soft: #352710;
+  --vio: #B59DFF; --vio-soft: #241A44;
+  --on-accent: #0B1219;
+  --hub: #E9EEF3; --on-hub: #0E151C;
+  --card: #182430; --on-card: #EEF2F5; --card-muted: #9AA8B4; --card-line: #2C3A47; --card-accent: #5BE0A8;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 18px 48px rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--desk); color: var(--ink); font-family: var(--f-body);
+  display: grid; grid-template-rows: minmax(0, 1fr) auto; overflow: hidden;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  -webkit-font-smoothing: antialiased;
+}
+p, h2, h3, ul { margin: 0; padding: 0; }
+ul { list-style: none; }
+button { font: inherit; color: inherit; }
+.ico { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.85; stroke-linecap: round; stroke-linejoin: round; }
+:focus-visible { outline: 2px solid var(--idn); outline-offset: 3px; }
+
+#wrap { position: relative; min-height: 0; }
+#stage {
+  position: absolute; left: 50%; top: 50%; width: 1280px; height: 720px;
+  transform-origin: center center; background: var(--paper);
+  border-radius: 10px; box-shadow: var(--shadow); overflow: hidden;
+}
+
+/* ---------- slide chrome ---------- */
+.slide { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity 0.4s ease, visibility 0s linear 0.4s; }
+.slide.active { opacity: 1; visibility: visible; transition: opacity 0.4s ease; }
+.sh { position: absolute; left: 52px; right: 52px; top: 28px; height: 20px; display: flex; justify-content: space-between; align-items: center; }
+.kicker { font-family: var(--f-mono); font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); }
+.kicker b { color: var(--ink); font-weight: 700; }
+.track { display: flex; gap: 5px; }
+.track i { display: block; width: 18px; height: 3px; border-radius: 2px; background: var(--line); }
+.track i.cur { background: var(--ink); }
+.title { position: absolute; left: 52px; top: 54px; width: 1176px; font-family: var(--f-display); font-size: 31px; line-height: 1.15; font-weight: 780; letter-spacing: -0.016em; }
+.lede { position: absolute; left: 52px; top: 99px; width: 1080px; font-size: 15px; line-height: 1.45; color: var(--ink-2); }
+.body { position: absolute; left: 52px; top: 146px; width: 1176px; height: 512px; }
+.sf { position: absolute; left: 52px; right: 52px; bottom: 12px; display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; padding-top: 7px; border-top: 1px solid var(--line); font-size: 10.5px; line-height: 1.4; color: var(--ink-3); }
+.sf .pg { font-family: var(--f-mono); white-space: nowrap; }
+.notes { display: none; }
+.more { position: absolute; right: 204px; top: 31px; display: inline-flex; align-items: center; gap: 6px; font-family: var(--f-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+.more svg { width: 14px; height: 14px; }
+.slide.has-more .more { opacity: 1; animation: nudge 1.6s ease-in-out infinite; }
+@keyframes nudge { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(4px); } }
+
+/* ---------- builds: elements with data-s appear on that click; --dl staggers them ---------- */
+.b { transition: opacity 0.5s ease, transform 0.55s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.b.on { transition-delay: var(--dl, 0s); }
+.slide .b:not(.on) { opacity: 0; transform: translateY(10px); pointer-events: none; }
+.slide svg .b:not(.on) { transform: none; }
+.draw { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 0.95s cubic-bezier(0.5, 0, 0.2, 1); }
+.draw.on { stroke-dashoffset: 0; transition-delay: var(--dl, 0s); }
+.tip { fill: none; stroke: none; opacity: 0; transition: opacity 0.25s ease; }
+.on > .tip { opacity: 1; transition-delay: calc(var(--dl, 0s) + 0.8s); }
+.wires g.b > circle { opacity: 0; transition: opacity 0.3s ease; }
+.wires g.b.on > circle { opacity: 1; transition-delay: calc(var(--dl, 0s) + 0.85s); }
+
+/* ---------- hover affordance ---------- */
+[data-h] { cursor: help; }
+:where([data-h]) { transition: box-shadow 0.18s ease; }
+.body [data-h]:hover:not(:has([data-h]:hover)) { box-shadow: 0 0 0 3px var(--ring, var(--idn-soft)); }
+.hitline { fill: none; stroke: transparent; stroke-width: 22; pointer-events: stroke; cursor: help; transition: stroke 0.18s ease; }
+.hitline:hover { stroke: color-mix(in srgb, var(--idn) 12%, transparent); }
+.b:not(.on) .hitline { pointer-events: none; }
+
+/* ---------- shared diagram parts ---------- */
+.wires { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+.wires .hitline, .wires [data-h] { pointer-events: stroke; }
+.p-idn { fill: none; stroke: var(--idn); stroke-width: 2.25; }
+.p-ink { fill: none; stroke: var(--ink-3); stroke-width: 2; }
+.p-thr { fill: none; stroke: var(--thr); stroke-width: 2; stroke-dasharray: 6 5; }
+.p-thr-solid { fill: none; stroke: var(--thr); stroke-width: 2.5; }
+.p-mon { fill: none; stroke: var(--mon); stroke-width: 2; }
+.p-mon-dash { fill: none; stroke: var(--mon); stroke-width: 1.5; stroke-dasharray: 3 5; }
+.p-faint { fill: none; stroke: var(--line); stroke-width: 2; stroke-dasharray: 4 5; }
+.dot-idn { fill: var(--idn); }
+.dot-thr { fill: var(--thr); }
+.dot-mon { fill: var(--mon); }
+.mk-idn { fill: var(--idn); }
+.mk-ink { fill: var(--ink-3); }
+.mk-dark { fill: var(--ink); }
+.mk-thr { fill: var(--thr); }
+.mk-mon { fill: var(--mon); }
+
+.tag { font-family: var(--f-mono); font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+.stamp {
+  position: absolute; display: inline-flex; align-items: center; white-space: nowrap;
+  font-family: var(--f-mono); font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; line-height: 1;
+  padding: 9px 13px 8px; border: 3px solid currentColor; border-radius: 4px; rotate: -7deg;
+  background: var(--paper); z-index: 4;
+}
+.stamp.thr { color: var(--thr); }
+.stamp.mon { color: var(--mon); }
+.stamp.on { animation: press 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.25) var(--dl, 0s) both; }
+@keyframes press { 0% { scale: 1.8; opacity: 0; } 60% { scale: 0.94; opacity: 1; } 100% { scale: 1; opacity: 1; } }
+
+/* ---------- slide 1 ---------- */
+.zone { position: absolute; top: 0; width: 360px; height: 300px; border-radius: 22px; }
+.z-ms { left: 0; background: var(--idn-soft); border: 1.5px solid var(--idn); --ring: color-mix(in srgb, var(--idn) 30%, transparent); }
+.z-okta { left: 408px; background: var(--paper); border: 1.5px dashed var(--idn); --ring: color-mix(in srgb, var(--idn) 30%, transparent); }
+.z-tail { left: 816px; background: var(--thr-soft); border: 1.5px dashed var(--thr); --ring: color-mix(in srgb, var(--thr) 30%, transparent); }
+.zh { position: absolute; left: 18px; top: 16px; right: 18px; display: flex; gap: 11px; align-items: center; }
+.zi { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; background: var(--idn); color: var(--on-accent); flex: none; }
+.z-tail .zi { background: var(--thr); }
+.zh b { display: block; font-family: var(--f-display); font-size: 16.5px; font-weight: 750; line-height: 1.15; }
+.zh .tag { color: var(--ink-3); display: block; margin-top: 3px; }
+.zfoot { position: absolute; left: 18px; right: 18px; bottom: 14px; padding-top: 10px; font-size: 13.5px; color: var(--ink-2); border-top: 1px dashed color-mix(in srgb, var(--ink-3) 45%, transparent); }
+.zfoot b { color: var(--ink); }
+.lockb { position: absolute; right: -16px; top: -16px; width: 40px; height: 40px; border-radius: 50%; background: var(--idn); color: var(--on-accent); display: grid; place-items: center; box-shadow: 0 0 0 5px var(--paper); }
+.apps { position: absolute; left: 18px; right: 18px; top: 88px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.app { display: grid; justify-items: center; gap: 7px; padding: 14px 4px 12px; border-radius: 13px; background: var(--paper); border: 1px solid var(--line); font-size: 13px; font-weight: 650; }
+.app .ico { width: 24px; height: 24px; color: var(--idn); }
+.mschips { position: absolute; left: 18px; right: 18px; top: 204px; display: flex; flex-wrap: wrap; gap: 6px; }
+.mschip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px 4px 6px; border-radius: 999px; background: var(--paper); border: 1px solid color-mix(in srgb, var(--idn) 35%, var(--line)); font-size: 11.5px; font-weight: 600; color: var(--ink-2); }
+.mschip .ico { width: 13px; height: 13px; color: var(--idn); }
+.okhub { position: absolute; left: 30px; top: 104px; width: 84px; height: 84px; border-radius: 50%; background: var(--idn); color: var(--on-accent); display: grid; place-items: center; box-shadow: 0 0 0 6px var(--idn-soft); }
+.okhub .ico { width: 32px; height: 32px; }
+.okcap { position: absolute; left: 22px; top: 200px; width: 100px; text-align: center; color: var(--idn); }
+.okapp { position: absolute; left: 196px; width: 146px; height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 10px; border-radius: 11px; border: 1px solid var(--line); background: var(--paper); font-size: 13px; font-weight: 650; }
+.okapp .st { margin-left: auto; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; }
+.okapp .st .ico { width: 12px; height: 12px; }
+.okapp .st.yes { background: var(--mon); color: var(--on-accent); }
+.okapp .st.no { background: var(--wash); color: var(--ink-3); border: 1px solid var(--line); }
+.spokes { position: absolute; left: 0; top: 0; pointer-events: none; }
+.tp { position: absolute; display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px 6px 8px; border-radius: 999px; background: var(--paper); border: 1px solid color-mix(in srgb, var(--thr) 40%, var(--line)); font-size: 12.5px; font-weight: 650; white-space: nowrap; }
+.tp .ico { width: 15px; height: 15px; color: var(--thr); }
+.tstat { position: absolute; left: 214px; top: 80px; width: 130px; display: grid; gap: 4px; padding: 10px 12px 12px; border-radius: 14px; background: var(--paper); border: 1px solid color-mix(in srgb, var(--thr) 40%, var(--line)); }
+.tstat .n { font-family: var(--f-display); font-size: 34px; font-weight: 850; line-height: 1; color: var(--thr); font-variant-numeric: tabular-nums; }
+.tstat span { font-size: 12px; line-height: 1.35; color: var(--ink-2); }
+.tstat .tag { color: var(--thr); font-size: 9.5px; letter-spacing: 0.06em; }
+.opp {
+  position: absolute; left: 0; top: 332px; width: 1176px; height: 66px;
+  display: flex; align-items: center; gap: 18px; padding: 0 22px;
+  border-radius: 18px; border: 1.5px dashed var(--idn);
+  background: linear-gradient(90deg, var(--idn-soft), var(--paper) 70%);
+  --ring: color-mix(in srgb, var(--idn) 30%, transparent);
+}
+.opp .tag { color: var(--on-accent); background: var(--idn); padding: 6px 10px 5px; border-radius: 999px; }
+.opp b { font-family: var(--f-display); font-size: 19px; font-weight: 760; }
+.opp .sub { margin-left: auto; display: flex; gap: 8px; }
+.opp .sub span { font-size: 12px; font-weight: 600; color: var(--idn); padding: 5px 10px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--idn) 35%, var(--line)); background: var(--paper); white-space: nowrap; }
+.sig { position: absolute; top: 420px; width: 360px; height: 88px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: center; padding-top: 10px; border-top: 2px solid var(--ink); }
+.sig span { font-size: 13px; line-height: 1.38; color: var(--ink-2); }
+.sig .n { font-family: var(--f-display); font-size: 36px; font-weight: 850; line-height: 1; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; color: var(--ink); }
+
+/* ---------- slide 2 ---------- */
+.actor { position: absolute; top: 124px; width: 180px; margin-left: -90px; display: grid; justify-items: center; gap: 4px; text-align: center; }
+.disc { width: 92px; height: 92px; border-radius: 50%; display: grid; place-items: center; border: 2px solid var(--ink); background: var(--paper); margin-bottom: 6px; }
+.disc .ico { width: 36px; height: 36px; }
+.actor b { font-family: var(--f-display); font-size: 17px; font-weight: 760; line-height: 1.1; }
+.actor .tag { color: var(--ink-3); }
+.actor.idp .disc { background: var(--idn); border-color: var(--idn); color: var(--on-accent); }
+.actor.agent .disc { background: var(--hub); border-color: var(--hub); color: var(--on-hub); box-shadow: 0 0 0 7px var(--idn-soft); }
+.actor.ext .disc { border-color: var(--ink-3); }
+.actor.ext b { font-size: 15.5px; }
+.lab { position: absolute; translate: -50% -50%; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; font-size: 14px; font-weight: 650; padding: 4px 12px 4px 4px; border-radius: 999px; background: var(--paper); border: 1px solid color-mix(in srgb, var(--idn) 30%, var(--line)); }
+.lab i { font-style: normal; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--idn); color: var(--on-accent); font-family: var(--f-mono); font-size: 11px; font-weight: 700; }
+.gkick { position: absolute; left: 0; top: 344px; color: var(--ink-3); }
+.gt { position: absolute; top: 372px; width: 104px; height: 106px; display: grid; justify-items: center; align-content: center; gap: 9px; border-radius: 16px; border: 1px solid var(--line); background: var(--paper); font-size: 13px; font-weight: 650; text-align: center; line-height: 1.2; }
+.gt .gi { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--wash); color: var(--ink-3); transition: background-color 0.3s ease, color 0.3s ease; }
+.gt .gi .ico { width: 22px; height: 22px; }
+.gt .ck { position: absolute; top: -9px; right: -9px; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--mon); color: var(--on-accent); scale: 0; transition: scale 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.4); box-shadow: 0 0 0 3px var(--paper); }
+.gt .ck .ico { width: 14px; height: 14px; }
+.gt { color: var(--ink-3); transition: border-color 0.3s ease, color 0.3s ease, box-shadow 0.18s ease; }
+.gt.on { border-color: color-mix(in srgb, var(--idn) 40%, var(--line)); color: var(--ink); transition-delay: 0.6s, 0.6s, 0s; }
+.gt.on .gi { background: var(--idn-soft); color: var(--idn); transition-delay: 0.6s; }
+.gt.on .ck { scale: 1; transition-delay: 0.85s; }
+.ticket { position: absolute; left: 620px; top: 356px; width: 556px; height: 132px; display: grid; grid-template-columns: 52px minmax(0, 1fr) 118px; border: 1.5px solid var(--idn); border-radius: 16px; background: var(--paper); overflow: hidden; --ring: color-mix(in srgb, var(--idn) 30%, transparent); }
+.ticket .stub { background: var(--idn); color: var(--on-accent); display: grid; place-items: center; }
+.ticket .stub span { writing-mode: vertical-rl; transform: rotate(180deg); font-family: var(--f-mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.2em; }
+.ticket dl { margin: 0; padding: 14px 18px; display: grid; gap: 4px; align-content: center; font-family: var(--f-mono); font-size: 12px; font-variation-settings: "wdth" 90; }
+.ticket dl div { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; }
+.ticket dt { color: var(--ink-3); }
+.ticket dd { margin: 0; white-space: nowrap; }
+.ticket dd.hl { color: var(--idn); font-weight: 700; }
+.ticket .seal { border-left: 2px dashed var(--line); display: grid; place-items: center; }
+.ticket .seal div { width: 78px; height: 78px; border-radius: 50%; border: 2px solid var(--idn); color: var(--idn); display: grid; place-items: center; text-align: center; transform: rotate(-12deg); font-family: var(--f-mono); font-size: 9px; font-weight: 700; letter-spacing: 0.08em; line-height: 1.3; }
+.ticket .seal .ico { width: 18px; height: 18px; margin: 0 auto 2px; }
+#solved { left: 934px; top: 334px; }
+
+/* ---------- slides 3 and 4 ---------- */
+.threat { position: absolute; left: 0; width: 236px; height: 52px; display: flex; align-items: center; gap: 10px; padding: 0 12px 0 9px; border-radius: 15px; border: 1.5px solid var(--thr); background: var(--paper); --ring: color-mix(in srgb, var(--thr) 28%, transparent); }
+.threat .ti { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--thr-soft); color: var(--thr); flex: none; }
+.threat .ti .ico { width: 18px; height: 18px; }
+.threat b { display: block; font-size: 14px; font-weight: 700; line-height: 1.2; }
+.threat small { display: block; font-size: 11px; color: var(--ink-3); line-height: 1.25; }
+.threat.main { background: var(--thr-soft); }
+.threat.ghost { border-style: dashed; background: transparent; opacity: 0.75; }
+.hub { position: absolute; border-radius: 50%; background: var(--hub); color: var(--on-hub); display: grid; place-items: center; align-content: center; gap: 4px; text-align: center; box-shadow: 0 0 0 8px var(--idn-soft); z-index: 2; }
+.hub .ico { width: 34px; height: 34px; margin: 0 auto; }
+.hub b { font-family: var(--f-display); font-size: 15px; font-weight: 760; }
+.hub::after { content: ""; position: absolute; inset: -8px; border-radius: 50%; border: 2px solid var(--idn); opacity: 0; }
+.slide.active .hub::after { animation: ring 2.6s ease-out infinite; }
+@keyframes ring { 0% { transform: scale(1); opacity: 0.55; } 100% { transform: scale(1.35); opacity: 0; } }
+.valid { position: absolute; translate: -50% 0; z-index: 3; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; padding: 5px 11px 5px 7px; border-radius: 999px; background: var(--idn-soft); color: var(--idn); font-family: var(--f-mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; }
+.valid .ico { width: 14px; height: 14px; }
+.gate { position: absolute; left: 700px; top: 118px; width: 134px; height: 204px; display: grid; grid-template-rows: auto 1fr; gap: 10px; padding: 14px 14px 12px; border-radius: 18px; border: 1.5px solid var(--idn); background: var(--paper); --ring: color-mix(in srgb, var(--idn) 30%, transparent); }
+.gate .gh { display: grid; justify-items: center; gap: 4px; color: var(--idn); text-align: center; }
+.gate .gh .ico { width: 26px; height: 26px; }
+.gate .gh .tag { color: var(--idn); font-size: 9.5px; }
+.gate ul { display: grid; gap: 7px; align-content: center; }
+.gate li { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); }
+.gate li i { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; background: var(--wash); color: transparent; transition: background-color 0.3s ease, color 0.3s ease; }
+.gate li i .ico { width: 11px; height: 11px; }
+.gate.on li i { background: var(--mon); color: var(--on-accent); transition-delay: 0.7s; }
+.gate.on li:nth-child(2) i { transition-delay: 0.9s; }
+.gate.on li:nth-child(3) i { transition-delay: 1.1s; }
+.gate.on li:nth-child(4) i { transition-delay: 1.3s; }
+.appdisc { position: absolute; width: 92px; height: 92px; margin: -46px 0 0 -46px; border-radius: 50%; border: 2px solid var(--ink-3); background: var(--paper); display: grid; place-items: center; z-index: 2; }
+.appdisc .ico { width: 34px; height: 34px; }
+.appcap { position: absolute; display: grid; gap: 3px; }
+.appcap b { font-family: var(--f-display); font-size: 17px; font-weight: 760; }
+.okline { display: inline-flex; align-items: center; gap: 5px; font-family: var(--f-mono); font-size: 11px; font-weight: 700; color: var(--mon); }
+.okline .ico { width: 13px; height: 13px; }
+.appcap .tag { color: var(--ink-3); }
+.outside { position: absolute; left: 410px; top: 384px; width: 262px; height: 58px; display: flex; align-items: center; gap: 10px; padding: 0 14px 0 10px; border-radius: 15px; border: 1.5px solid var(--thr); background: var(--thr-soft); --ring: color-mix(in srgb, var(--thr) 28%, transparent); }
+.outside .ti { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--thr); color: var(--on-accent); flex: none; }
+.outside b { display: block; font-size: 14px; font-weight: 700; }
+.outside small { display: block; font-family: var(--f-mono); font-size: 10px; color: var(--thr); }
+.flowlab { position: absolute; font-size: 12.5px; font-weight: 700; color: var(--thr); white-space: nowrap; }
+.qband { position: absolute; left: 290px; top: 468px; width: 886px; display: flex; justify-content: flex-end; gap: 10px; }
+.q { display: inline-flex; align-items: center; gap: 9px; padding: 7px 15px 7px 7px; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); font-size: 14px; font-weight: 650; white-space: nowrap; }
+.q i { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; color: var(--on-accent); }
+.q i .ico { width: 13px; height: 13px; }
+.q.ok i { background: var(--mon); }
+.q.bad { border-color: var(--thr); background: var(--thr-soft); --ring: color-mix(in srgb, var(--thr) 28%, transparent); }
+.q.bad i { background: var(--thr); }
+
+.spec { position: absolute; top: 0; height: 50px; display: flex; align-items: center; gap: 11px; padding: 0 16px 0 7px; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); font-size: 13.5px; white-space: nowrap; }
+.spec .si { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--wash); color: var(--ink-2); flex: none; }
+.spec .si .ico { width: 18px; height: 18px; }
+.spec b { font-family: var(--f-display); font-weight: 760; font-size: 15px; margin-right: 2px; }
+.spec span { color: var(--ink-2); }
+.spec.auto { border-color: var(--mon); background: var(--mon-soft); --ring: color-mix(in srgb, var(--mon) 30%, transparent); }
+.spec.auto .si { background: var(--mon); color: var(--on-accent); }
+.spec.auto b { color: var(--mon); }
+.mlabel { position: absolute; translate: -50% -50%; padding: 5px 13px 4px; border-radius: 999px; background: var(--mon); color: var(--on-accent); font-family: var(--f-mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em; white-space: nowrap; z-index: 3; --ring: color-mix(in srgb, var(--mon) 30%, transparent); }
+.sensor { position: absolute; width: 112px; margin-left: -56px; display: grid; justify-items: center; gap: 4px; text-align: center; z-index: 2; --ring: color-mix(in srgb, var(--mon) 30%, transparent); border-radius: 14px; }
+.sensor .sd { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; border: 1.5px solid var(--mon); background: var(--paper); color: var(--mon); transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; }
+.sensor .sd .ico { width: 20px; height: 20px; }
+.sensor b { font-size: 12.5px; font-weight: 700; }
+.sensor.up { display: flex; flex-direction: column; align-items: center; }
+.sensor.up b { order: 1; }
+.sensor.up .v { order: 2; }
+.sensor.up .sd { order: 3; margin-top: 2px; }
+.sensor .v { font-family: var(--f-mono); font-size: 9.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--thr); opacity: 0; transition: opacity 0.3s ease; }
+.sensor.lit .sd { background: var(--thr); border-color: var(--thr); color: var(--on-accent); animation: flash 0.7s ease var(--d, 0s) both; transition-delay: var(--d, 0s); }
+.sensor.lit .v { opacity: 1; transition-delay: var(--d, 0s); }
+@keyframes flash { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--thr) 55%, transparent); } 100% { box-shadow: 0 0 0 16px transparent; } }
+.barrier { position: absolute; width: 58px; height: 58px; margin: -29px 0 0 -29px; border-radius: 50%; display: grid; place-items: center; background: var(--thr); color: var(--on-accent); box-shadow: 0 0 0 6px var(--thr-soft); z-index: 3; --ring: color-mix(in srgb, var(--thr) 35%, transparent); }
+.barrier .ico { width: 26px; height: 26px; }
+.barrier .tag { position: absolute; top: 68px; left: 50%; translate: -50% 0; color: var(--thr); background: var(--paper); padding: 3px 7px 2px; border-radius: 5px; border: 1px solid color-mix(in srgb, var(--thr) 40%, var(--line)); }
+.barrier.on { animation: slam 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.3) var(--dl, 0s) both; }
+@keyframes slam { 0% { scale: 0.3; opacity: 0; } 100% { scale: 1; opacity: 1; } }
+.ghostapp { position: absolute; width: 70px; height: 70px; margin: -35px 0 0 -35px; border-radius: 50%; border: 1.5px dashed var(--ink-3); display: grid; place-items: center; color: var(--ink-3); background: var(--paper); z-index: 2; }
+.ghostapp .ico { width: 26px; height: 26px; }
+.ghostcap { position: absolute; translate: -50% 0; text-align: center; font-size: 12px; color: var(--ink-3); white-space: nowrap; }
+.ghostcap b { display: block; color: var(--ink-2); font-size: 13px; }
+.phone .done .ico { width: 13px; height: 13px; }
+.phone { position: absolute; left: 656px; top: 92px; width: 136px; padding: 12px 12px 11px; border-radius: 18px; border: 1.5px solid var(--ink); background: var(--paper); display: grid; gap: 7px; z-index: 3; --ring: color-mix(in srgb, var(--mon) 30%, transparent); }
+.phone .ph { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; }
+.phone .ph .ico { width: 15px; height: 15px; }
+.phone p { font-size: 11.5px; line-height: 1.35; color: var(--ink-2); }
+.phone .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.phone .btns span { text-align: center; font-size: 11px; font-weight: 700; padding: 5px 0; border-radius: 7px; border: 1px solid var(--line); }
+.phone .btns .blk { background: var(--thr); border-color: var(--thr); color: var(--on-accent); }
+.phone .done { display: inline-flex; align-items: center; justify-content: center; gap: 5px; font-size: 11.5px; font-weight: 700; color: var(--mon); background: var(--mon-soft); border-radius: 7px; padding: 5px 0; opacity: 0; }
+.phone .stack { display: grid; }
+.phone .stack > * { grid-area: 1 / 1; }
+.phone.on .done { animation: appear 0.4s ease calc(var(--dl, 0s) + 1.3s) both; }
+.phone.on .btns { animation: vanish 0.3s ease calc(var(--dl, 0s) + 1.2s) both; }
+@keyframes appear { from { opacity: 0; scale: 0.9; } to { opacity: 1; scale: 1; } }
+@keyframes vanish { to { opacity: 0; } }
+#saved { left: 632px; top: 362px; font-size: 11.5px; padding: 8px 11px 7px; }
+
+.geo { position: absolute; left: 800px; top: 0; width: 376px; height: 404px; display: grid; gap: 12px; align-content: start; padding: 20px 22px 18px; border-radius: 20px; background: var(--card); color: var(--on-card); --ring: rgba(91, 224, 168, 0.35); }
+.geo .badge { justify-self: start; display: inline-flex; align-items: center; gap: 7px; padding: 5px 10px 4px 7px; border-radius: 999px; border: 1px solid var(--card-accent); color: var(--card-accent); }
+.geo .badge .ico { width: 14px; height: 14px; }
+.geo h3 { font-family: var(--f-display); font-size: 46px; font-weight: 900; line-height: 0.95; letter-spacing: -0.02em; font-variation-settings: "wdth" 112; }
+.geo .meta { font-family: var(--f-mono); font-size: 10.5px; color: var(--card-muted); }
+.caps { border-top: 1px solid var(--card-line); }
+.cap { display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 12px; align-items: center; padding: 9px 4px; border-bottom: 1px solid var(--card-line); border-radius: 8px; }
+.cap .ci { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; background: rgba(91, 224, 168, 0.12); color: var(--card-accent); }
+.cap .ci .ico { width: 19px; height: 19px; }
+.geo .cap { opacity: 0; translate: 0 6px; transition: opacity 0.4s ease, translate 0.4s ease, box-shadow 0.18s ease; }
+.geo.on .cap { opacity: 1; translate: 0 0; }
+.geo.on .cap:nth-child(1) { transition-delay: 0.35s, 0.35s, 0s; }
+.geo.on .cap:nth-child(2) { transition-delay: 0.5s, 0.5s, 0s; }
+.geo.on .cap:nth-child(3) { transition-delay: 0.65s, 0.65s, 0s; }
+.geo.on .cap:nth-child(4) { transition-delay: 0.8s, 0.8s, 0s; }
+.cap b { display: block; font-size: 14.5px; font-weight: 700; }
+.cap span { font-size: 12.5px; color: var(--card-muted); }
+.punch { position: absolute; left: 800px; top: 422px; width: 376px; height: 90px; display: grid; align-content: center; gap: 2px; padding: 0 22px; border-radius: 18px; border: 1.5px dashed var(--idn); background: linear-gradient(100deg, var(--idn-soft), var(--mon-soft)); font-family: var(--f-display); font-size: 21px; font-weight: 780; line-height: 1.22; }
+.punch .w1 { color: var(--idn); }
+.punch .w2 { color: var(--mon); }
+.slide.active .mrect.on { animation: march 1.2s linear infinite; }
+@keyframes march { to { stroke-dashoffset: -16; } }
+
+/* ---------- slide 1: five themes around the enterprise's agents ---------- */
+.glabel { position: absolute; top: 0; left: 0; color: var(--ink-3); white-space: nowrap; }
+.glabel b { color: var(--ink); font-weight: 700; }
+.p-spoke { fill: none; stroke-width: 2; }
+.th { position: absolute; width: 296px; height: 166px; padding: 14px 16px; border-radius: 18px; background: var(--paper); border: 1.5px solid var(--line); display: grid; grid-template-rows: auto auto 1fr auto; gap: 6px; --tc: var(--idn); --ts: var(--idn-soft); --ring: color-mix(in srgb, var(--tc) 28%, transparent); transition: opacity 0.45s ease, border-color 0.3s ease, box-shadow 0.25s ease; }
+.th.t1 { --tc: var(--idn); --ts: var(--idn-soft); }
+.th.t2 { --tc: var(--thr); --ts: var(--thr-soft); }
+.th.t3 { --tc: var(--amb); --ts: var(--amb-soft); }
+.th.t4 { --tc: var(--vio); --ts: var(--vio-soft); }
+.th .row, .soc .row { display: flex; align-items: center; gap: 10px; }
+.th .ti { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--ts); color: var(--tc); }
+.th .ti .ico, .soc .ti .ico { width: 18px; height: 18px; }
+.num { font-family: var(--f-mono); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--tc); }
+.th h3 { font-family: var(--f-display); font-size: 16px; font-weight: 760; line-height: 1.2; text-wrap: balance; }
+.th p { font-size: 12.5px; line-height: 1.35; color: var(--ink-2); }
+.th .chip { justify-self: start; padding: 4px 10px; border-radius: 999px; background: var(--ts); color: var(--tc); font-size: 11.5px; font-weight: 650; white-space: nowrap; }
+.th.focus.lit { border-color: var(--tc); box-shadow: 0 0 0 4px color-mix(in srgb, var(--tc) 14%, transparent); }
+.dim.lit { opacity: 0.42; }
+.ddp { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px 4px 7px; border-radius: 999px; background: var(--tc); color: var(--on-accent); font-family: var(--f-mono); font-size: 9.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; }
+.ddp .ico { width: 12px; height: 12px; }
+.soc { position: absolute; left: 828px; top: 24px; width: 348px; height: 460px; padding: 20px 22px 18px; border-radius: 20px; background: var(--card); color: var(--on-card); display: grid; grid-template-rows: auto auto auto 1fr auto; gap: 8px; --tc: var(--card-accent); --ring: rgba(91, 224, 168, 0.35); }
+.soc .ti { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: rgba(91, 224, 168, 0.14); color: var(--card-accent); }
+.soc h3 { font-family: var(--f-display); font-size: 25px; font-weight: 800; line-height: 1.1; letter-spacing: -0.01em; margin-top: 4px; }
+.soc p { font-size: 13px; line-height: 1.4; color: var(--card-muted); }
+.socflow { position: relative; align-self: center; display: grid; gap: 12px; padding-left: 30px; border-radius: 12px; }
+.socwire { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+.socstep { display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 12px 0 6px; border-radius: 11px; border: 1px solid var(--card-line); background: color-mix(in srgb, var(--on-card) 4%, var(--card)); font-size: 13px; font-weight: 650; }
+.socstep i { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; background: rgba(91, 224, 168, 0.14); color: var(--card-accent); }
+.socstep i .ico { width: 15px; height: 15px; }
+.socstep.human { border-color: var(--card-accent); }
+.socstep.human i { background: var(--card-accent); color: var(--card); }
+.socstep small { margin-left: auto; font-family: var(--f-mono); font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--card-accent); }
+.socstat { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: center; padding-top: 14px; border-top: 1px solid var(--card-line); }
+.socstat .n { font-family: var(--f-display); font-size: 40px; font-weight: 850; line-height: 1; color: var(--card-accent); }
+.socstat .d { font-size: 12.5px; line-height: 1.4; color: var(--card-muted); }
+.socstat .tag { display: block; margin-top: 3px; color: var(--card-accent); }
+
+/* ---------- slide 2: why each agent needs its own identity ---------- */
+.capline { position: absolute; left: 0; color: var(--ink-3); white-space: nowrap; }
+.idanchor { position: absolute; left: 0; top: 64px; width: 140px; display: grid; justify-items: center; gap: 3px; text-align: center; border-radius: 14px; }
+.idanchor .disc2 { position: relative; width: 112px; height: 112px; border-radius: 50%; display: grid; place-items: center; background: var(--hub); color: var(--on-hub); box-shadow: 0 0 0 8px var(--idn-soft); margin-bottom: 14px; }
+.idanchor .disc2 > .ico { width: 40px; height: 40px; }
+.idanchor .idtag { position: absolute; right: -16px; bottom: 0; display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px 3px 6px; border-radius: 7px; background: var(--idn); color: var(--on-accent); font-family: var(--f-mono); font-size: 10px; font-weight: 700; letter-spacing: 0.08em; box-shadow: 0 0 0 3px var(--paper); }
+.idanchor .idtag .ico { width: 13px; height: 13px; }
+.idanchor b { font-family: var(--f-display); font-size: 16px; font-weight: 760; }
+.idanchor .s { font-size: 12.5px; color: var(--ink-2); }
+.idnode { position: absolute; top: 88px; width: 176px; margin-left: -88px; display: grid; justify-items: center; gap: 3px; text-align: center; border-radius: 14px; }
+.idnode .nd { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: var(--paper); border: 2px solid var(--idn); color: var(--idn); margin-bottom: 8px; transition: background-color 0.3s ease, color 0.3s ease; }
+.idnode.on .nd { background: var(--idn); color: var(--on-accent); transition-delay: calc(var(--dl, 0s) + 0.35s); }
+.idnode .nd .ico { width: 26px; height: 26px; }
+.idnode b { font-family: var(--f-display); font-size: 16px; font-weight: 760; }
+.idnode .s { font-size: 12.5px; line-height: 1.35; color: var(--ink-2); max-width: 160px; }
+.ev { position: absolute; top: 296px; width: 262px; height: 172px; padding: 16px 18px 14px; border-radius: 18px; border: 1px solid var(--line); background: var(--paper); display: flex; flex-direction: column; gap: 8px; }
+.ev .n { font-family: var(--f-display); font-size: 46px; font-weight: 850; line-height: 1; letter-spacing: -0.015em; font-variant-numeric: tabular-nums; }
+.ev .t { font-family: var(--f-display); font-size: 21px; font-weight: 780; line-height: 1.1; }
+.ev .d { font-size: 13.5px; line-height: 1.4; color: var(--ink-2); }
+.ev .tag { margin-top: auto; color: var(--ink-3); }
+.ev .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.ev .chips span { padding: 5px 10px 4px; border-radius: 999px; background: var(--idn-soft); color: var(--idn); font-family: var(--f-mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.02em; }
+
+/* ---------- controls, notes, popover ---------- */
+#bar { display: flex; align-items: center; gap: 12px; height: 56px; padding-bottom: env(safe-area-inset-bottom, 0px); }
+#chap { font-family: var(--f-mono); font-size: 11px; letter-spacing: 0.06em; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 0 1 300px; }
+#prog { flex: 1; display: flex; gap: 5px; min-width: 0; }
+#prog button { flex: 1; height: 18px; border: 0; padding: 7px 0; background: transparent; cursor: pointer; }
+#prog button i { display: block; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
+#prog button i b { display: block; height: 100%; width: 0; background: var(--idn); border-radius: 2px; transition: width 0.35s ease; }
+#prog button.done i b { width: 100%; background: var(--ink-3); }
+#count { font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.btn { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 11px; border-radius: 9px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.btn:hover { border-color: var(--ink-3); }
+.btn .ico { width: 16px; height: 16px; }
+.btn[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+#notes { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(66px + env(safe-area-inset-bottom, 0px)); width: min(400px, calc(100vw - 32px)); max-height: 54vh; overflow: auto; z-index: 20; padding: 16px 18px; border-radius: 14px; background: var(--paper); border: 1px solid var(--line); box-shadow: var(--shadow); }
+#notes h6 { margin: 0 0 8px; font-family: var(--f-mono); font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--idn); }
+#notes ul { padding-left: 18px; list-style: disc; }
+#notes li { font-size: 13.5px; line-height: 1.5; margin-bottom: 6px; }
+#notes .hint { display: none; }
+#pop { position: fixed; z-index: 40; left: 0; top: 0; width: 310px; padding: 12px 15px 13px; border-radius: 12px; background: var(--paper); color: var(--ink); border: 1px solid var(--line); border-top: 3px solid var(--pc, var(--idn)); box-shadow: var(--shadow); pointer-events: none; opacity: 0; transform: translateY(4px); transition: opacity 0.14s ease, transform 0.14s ease; }
+#pop.on { opacity: 1; transform: none; }
+#pop .pk { font-family: var(--f-mono); font-size: 9.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--pc, var(--idn)); }
+#pop .pt { font-family: var(--f-display); font-size: 16px; font-weight: 760; line-height: 1.25; margin: 3px 0 7px; }
+#pop ul { padding-left: 16px; list-style: disc; display: grid; gap: 5px; }
+#pop li { font-size: 13px; line-height: 1.45; color: var(--ink-2); }
+#pop .ps { margin-top: 8px; font-family: var(--f-mono); font-size: 9.5px; color: var(--ink-3); }
+#toast { position: fixed; left: 50%; bottom: calc(70px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 50; padding: 9px 14px; border-radius: 9px; background: var(--ink); color: var(--paper); font-size: 13px; box-shadow: var(--shadow); width: max-content; max-width: calc(100vw - 32px); }
+
+/* narrow screens: stage scales to width, talk track shows below it */
+@media (max-width: 760px) {
+  body { overflow: auto; display: block; padding-top: 14px; }
+  #wrap { height: var(--wrap-h, 220px); }
+  #stage { left: 0; top: 0; transform-origin: 0 0; }
+  #bar { flex-wrap: wrap; height: auto; padding-block: 10px; gap: 8px; }
+  #chap { flex-basis: 100%; }
+  .btn .lbl { display: none; }
+  #notes { position: static; width: auto; max-height: none; margin: 4px 0 24px; box-shadow: none; }
+  #notes .hint { display: block; margin-top: 10px; font-size: 12px; color: var(--ink-3); }
+  #ntog { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .wires circle { display: none; }
+  .phone.on .done { opacity: 1; }
+  .phone.on .btns { opacity: 0; }
+}
+</style>
+
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="i-activity" viewBox="0 0 24 24"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2" /></symbol><symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14" /> <path d="m12 5 7 7-7 7" /></symbol><symbol id="i-badge-check" viewBox="0 0 24 24"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" /> <path d="m9 12 2 2 4-4" /></symbol><symbol id="i-ban" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="m4.9 4.9 14.2 14.2" /></symbol><symbol id="i-bell" viewBox="0 0 24 24"><path d="M10.268 21a2 2 0 0 0 3.464 0" /> <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" /></symbol><symbol id="i-bot" viewBox="0 0 24 24"><path d="M12 8V4H8" /> <rect width="16" height="12" x="4" y="8" rx="2" /> <path d="M2 14h2" /> <path d="M20 14h2" /> <path d="M15 13v2" /> <path d="M9 13v2" /></symbol><symbol id="i-building-2" viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" /> <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" /> <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" /> <path d="M10 6h4" /> <path d="M10 10h4" /> <path d="M10 14h4" /> <path d="M10 18h4" /></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol><symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></symbol><symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></symbol><symbol id="i-circle-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="m9 12 2 2 4-4" /></symbol><symbol id="i-circle-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /> <path d="M12 17h.01" /></symbol><symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3" /> <path d="M3 5V19A9 3 0 0 0 21 19V5" /> <path d="M3 12A9 3 0 0 0 21 12" /></symbol><symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /> <circle cx="12" cy="12" r="3" /></symbol><symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" /> <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" /> <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" /> <path d="m2 2 20 20" /></symbol><symbol id="i-fingerprint" viewBox="0 0 24 24"><path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4" /> <path d="M14 13.12c0 2.38 0 6.38-1 8.88" /> <path d="M17.29 21.02c.12-.6.43-2.3.5-3.02" /> <path d="M2 12a10 10 0 0 1 18-6" /> <path d="M2 16h.01" /> <path d="M21.8 16c.2-2 .131-5.354 0-6" /> <path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2" /> <path d="M8.65 22c.21-.66.45-1.32.57-2" /> <path d="M9 6.8a6 6 0 0 1 9 5.2v2" /></symbol><symbol id="i-folder" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /></symbol><symbol id="i-gauge" viewBox="0 0 24 24"><path d="m12 14 4-4" /> <path d="M3.34 19a10 10 0 1 1 17.32 0" /></symbol><symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /> <path d="M2 12h20" /></symbol><symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /> <path d="M3 3v5h5" /> <path d="M12 7v5l4 2" /></symbol><symbol id="i-id-card" viewBox="0 0 24 24"><path d="M16 10h2" /> <path d="M16 14h2" /> <path d="M6.17 15a3 3 0 0 1 5.66 0" /> <circle cx="9" cy="11" r="2" /> <rect x="2" y="5" width="20" height="14" rx="2" /></symbol><symbol id="i-key-round" viewBox="0 0 24 24"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z" /> <circle cx="16.5" cy="7.5" r=".5" fill="currentColor" /></symbol><symbol id="i-layers" viewBox="0 0 24 24"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" /> <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" /> <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" /></symbol><symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /> <path d="M7 11V7a5 5 0 0 1 10 0v4" /></symbol><symbol id="i-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2" /> <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></symbol><symbol id="i-mail-warning" viewBox="0 0 24 24"><path d="M22 10.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h12.5" /> <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /> <path d="M20 14v4" /> <path d="M20 22v.01" /></symbol><symbol id="i-map" viewBox="0 0 24 24"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z" /> <path d="M15 5.764v15" /> <path d="M9 3.236v15" /></symbol><symbol id="i-maximize" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3" /> <path d="M21 8V5a2 2 0 0 0-2-2h-3" /> <path d="M3 16v3a2 2 0 0 0 2 2h3" /> <path d="M16 21h3a2 2 0 0 0 2-2v-3" /></symbol><symbol id="i-message-square" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></symbol><symbol id="i-notebook-pen" viewBox="0 0 24 24"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4" /> <path d="M2 6h4" /> <path d="M2 10h4" /> <path d="M2 14h4" /> <path d="M2 18h4" /> <path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" /></symbol><symbol id="i-power" viewBox="0 0 24 24"><path d="M12 2v10" /> <path d="M18.4 6.6a9 9 0 1 1-12.77.04" /></symbol><symbol id="i-puzzle" viewBox="0 0 24 24"><path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z" /></symbol><symbol id="i-radar" viewBox="0 0 24 24"><path d="M19.07 4.93A10 10 0 0 0 6.99 3.34" /> <path d="M4 6h.01" /> <path d="M2.29 9.62A10 10 0 1 0 21.31 8.35" /> <path d="M16.24 7.76A6 6 0 1 0 8.23 16.67" /> <path d="M12 18h.01" /> <path d="M17.99 11.66A6 6 0 0 1 15.77 16.67" /> <circle cx="12" cy="12" r="2" /> <path d="m13.41 10.59 5.66-5.66" /></symbol><symbol id="i-scan-eye" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2" /> <path d="M17 3h2a2 2 0 0 1 2 2v2" /> <path d="M21 17v2a2 2 0 0 1-2 2h-2" /> <path d="M7 21H5a2 2 0 0 1-2-2v-2" /> <circle cx="12" cy="12" r="1" /> <path d="M18.944 12.33a1 1 0 0 0 0-.66 7.5 7.5 0 0 0-13.888 0 1 1 0 0 0 0 .66 7.5 7.5 0 0 0 13.888 0" /></symbol><symbol id="i-scroll-text" viewBox="0 0 24 24"><path d="M15 12h-5" /> <path d="M15 8h-5" /> <path d="M19 17V5a2 2 0 0 0-2-2H4" /> <path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3" /></symbol><symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /> <path d="m21 21-4.3-4.3" /></symbol><symbol id="i-server" viewBox="0 0 24 24"><rect width="20" height="8" x="2" y="2" rx="2" ry="2" /> <rect width="20" height="8" x="2" y="14" rx="2" ry="2" /> <line x1="6" x2="6.01" y1="6" y2="6" /> <line x1="6" x2="6.01" y1="18" y2="18" /></symbol><symbol id="i-shield-alert" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /> <path d="M12 8v4" /> <path d="M12 16h.01" /></symbol><symbol id="i-shield-check" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /> <path d="m9 12 2 2 4-4" /></symbol><symbol id="i-sliders-horizontal" viewBox="0 0 24 24"><line x1="21" x2="14" y1="4" y2="4" /> <line x1="10" x2="3" y1="4" y2="4" /> <line x1="21" x2="12" y1="12" y2="12" /> <line x1="8" x2="3" y1="12" y2="12" /> <line x1="21" x2="16" y1="20" y2="20" /> <line x1="12" x2="3" y1="20" y2="20" /> <line x1="14" x2="14" y1="2" y2="6" /> <line x1="8" x2="8" y1="10" y2="14" /> <line x1="16" x2="16" y1="18" y2="22" /></symbol><symbol id="i-smartphone" viewBox="0 0 24 24"><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /> <path d="M12 18h.01" /></symbol><symbol id="i-stamp" viewBox="0 0 24 24"><path d="M5 22h14" /> <path d="M19.27 13.73A2.5 2.5 0 0 0 17.5 13h-11A2.5 2.5 0 0 0 4 15.5V17a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.5c0-.66-.26-1.3-.73-1.77Z" /> <path d="M14 13V8.5C14 7 15 7 15 5a3 3 0 0 0-3-3c-1.66 0-3 1-3 3s1 2 1 3.5V13" /></symbol><symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <circle cx="12" cy="12" r="6" /> <circle cx="12" cy="12" r="2" /></symbol><symbol id="i-terminal" viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5" /> <line x1="12" x2="20" y1="19" y2="19" /></symbol><symbol id="i-trash-2" viewBox="0 0 24 24"><path d="M3 6h18" /> <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /> <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /> <line x1="10" x2="10" y1="11" y2="17" /> <line x1="14" x2="14" y1="11" y2="17" /></symbol><symbol id="i-trophy" viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" /> <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" /> <path d="M4 22h16" /> <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" /> <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" /> <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" /></symbol><symbol id="i-unplug" viewBox="0 0 24 24"><path d="m19 5 3-3" /> <path d="m2 22 3-3" /> <path d="M6.3 20.3a2.4 2.4 0 0 0 3.4 0L12 18l-6-6-2.3 2.3a2.4 2.4 0 0 0 0 3.4Z" /> <path d="M7.5 13.5 10 11" /> <path d="M10.5 16.5 13 14" /> <path d="m12 6 6 6 2.3-2.3a2.4 2.4 0 0 0 0-3.4l-2.6-2.6a2.4 2.4 0 0 0-3.4 0Z" /></symbol><symbol id="i-user-check" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /> <circle cx="9" cy="7" r="4" /> <polyline points="16 11 18 13 22 9" /></symbol><symbol id="i-user-round" viewBox="0 0 24 24"><circle cx="12" cy="8" r="5" /> <path d="M20 21a8 8 0 0 0-16 0" /></symbol><symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /> <circle cx="9" cy="7" r="4" /> <path d="M22 21v-2a4 4 0 0 0-3-3.87" /> <path d="M16 3.13a4 4 0 0 1 0 7.75" /></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18" /> <path d="m6 6 12 12" /></symbol></defs></svg>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <marker id="m-idn" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mk-idn" d="M0 0L10 5L0 10z"/></marker>
+    <marker id="m-ink" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mk-ink" d="M0 0L10 5L0 10z"/></marker>
+    <marker id="m-dark" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mk-dark" d="M0 0L10 5L0 10z"/></marker>
+    <marker id="m-thr" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mk-thr" d="M0 0L10 5L0 10z"/></marker>
+    <marker id="m-mon" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mk-mon" d="M0 0L10 5L0 10z"/></marker>
+  </defs>
+</svg>
+
+<div id="wrap"><div id="stage">
+
+<!-- ===================== SLIDE 1 · FIVE THEMES ===================== -->
+<section class="slide" id="slide-1" data-ch="Five themes">
+  <header class="sh"><span class="kicker"><b>01</b> · Five themes</span><span class="track"></span></header>
+  <h2 class="title">Five themes dominate enterprise AI security in 2026</h2>
+  <p class="lede">Four themes defend the enterprise's own AI. The fifth uses AI to defend. Hover a theme for the evidence.</p>
+  <div class="body">
+    <svg class="wires" width="1176" height="512" viewBox="0 0 1176 512" aria-hidden="true">
+      <path id="sp1a" class="p-spoke" style="stroke:var(--idn)" d="M354 213 L286 180"/>
+      <path id="sp1b" class="p-spoke" style="stroke:var(--thr)" d="M436 213 L504 180"/>
+      <path id="sp1c" class="p-spoke" style="stroke:var(--amb)" d="M354 295 L286 328"/>
+      <path id="sp1d" class="p-spoke" style="stroke:var(--vio)" d="M436 295 L504 328"/>
+      <circle r="4" style="fill:var(--idn)"><animateMotion dur="1.6s" repeatCount="indefinite"><mpath href="#sp1a"/></animateMotion></circle>
+      <circle r="4" style="fill:var(--thr)"><animateMotion dur="1.6s" begin="-0.4s" repeatCount="indefinite"><mpath href="#sp1b"/></animateMotion></circle>
+      <circle r="4" style="fill:var(--amb)"><animateMotion dur="1.6s" begin="-0.8s" repeatCount="indefinite"><mpath href="#sp1c"/></animateMotion></circle>
+      <circle r="4" style="fill:var(--vio)"><animateMotion dur="1.6s" begin="-1.2s" repeatCount="indefinite"><mpath href="#sp1d"/></animateMotion></circle>
+      <path class="p-faint" d="M826 254 L455 254"/>
+      <g class="b" data-s="1" style="--dl:0.35s">
+        <path id="socl" class="p-mon draw" data-s="1" pathLength="1" d="M826 254 L455 254"/>
+        <path class="tip" marker-end="url(#m-mon)" d="M826 254 L455 254"/>
+        <circle r="5" class="dot-mon"><animateMotion dur="2.4s" repeatCount="indefinite"><mpath href="#socl"/></animateMotion></circle>
+        <circle r="5" class="dot-mon"><animateMotion dur="2.4s" begin="-1.2s" repeatCount="indefinite"><mpath href="#socl"/></animateMotion></circle>
+      </g>
+    </svg>
+
+    <span class="glabel tag">Defend the enterprise's own AI · <b>themes 1–4</b></span>
+    <span class="glabel tag b" data-s="1" style="left:828px">Use AI to defend · <b>theme 5</b></span>
+
+    <div class="th t1 focus" data-lit="2" style="left:0; top:24px" data-h="th-1">
+      <div class="row"><span class="ti"><svg class="ico"><use href="#i-key-round"/></svg></span><span class="num">01</span><span class="ddp b" data-s="2" data-h="dd-1"><svg class="ico"><use href="#i-arrow-right"/></svg>Deep dive · slides 2–4</span></div>
+      <h3>Agent identity and least privilege</h3>
+      <p>Who is this agent, and what may it do?</p>
+      <span class="chip">Only 18% say their IAM is agent-ready</span>
+    </div>
+    <div class="th t2 focus" data-lit="2" style="left:494px; top:24px" data-h="th-2">
+      <div class="row"><span class="ti"><svg class="ico"><use href="#i-shield-alert"/></svg></span><span class="num">02</span><span class="ddp b" data-s="2" style="--dl:0.12s" data-h="dd-2"><svg class="ico"><use href="#i-arrow-right"/></svg>Deep dive · slides 5–6</span></div>
+      <h3>Agent hijacking and runtime guardrails</h3>
+      <p>Is it doing what it should, right now?</p>
+      <span class="chip">OWASP Agentic Top 10 · Dec 2025</span>
+    </div>
+    <div class="th t3 dim" data-lit="2" style="left:0; top:318px" data-h="th-3">
+      <div class="row"><span class="ti"><svg class="ico"><use href="#i-puzzle"/></svg></span><span class="num">03</span></div>
+      <h3>AI supply chain: MCP servers, plugins, skills</h3>
+      <p>What is it plugging into?</p>
+      <span class="chip">Up to 200,000 MCP instances exposed</span>
+    </div>
+    <div class="th t4 dim" data-lit="2" style="left:494px; top:318px" data-h="th-4">
+      <div class="row"><span class="ti"><svg class="ico"><use href="#i-eye-off"/></svg></span><span class="num">04</span></div>
+      <h3>Shadow AI, data leakage and governance</h3>
+      <p>Which agents exist, and what data leaves?</p>
+      <span class="chip">Shadow AI hit 43% of breached firms</span>
+    </div>
+
+    <div class="hub" style="left:347px; top:206px; width:96px; height:96px" data-h="hub1"><svg class="ico"><use href="#i-bot"/></svg><b>AI agents</b></div>
+    <span class="flowlab b" data-s="1" style="left:604px; top:226px; color:var(--mon); --dl:0.7s">Defends at machine speed</span>
+
+    <div class="soc b dim" data-s="1" data-lit="2" data-h="th-5">
+      <div class="row"><span class="ti"><svg class="ico"><use href="#i-radar"/></svg></span><span class="num">05</span><span class="tag" style="margin-left:auto; color:var(--card-accent)">Agentic SOC</span></div>
+      <h3>AI as the defender</h3>
+      <p>Attacks run at machine speed, so defense has to match them.</p>
+      <div class="socflow" data-h="soc-flow">
+        <svg class="socwire" width="30" height="180" viewBox="0 0 30 180" aria-hidden="true">
+          <path id="socv" d="M12 18 L12 162" style="fill:none; stroke:var(--card-line); stroke-width:2"/>
+          <circle cx="12" cy="18" r="3.5" style="fill:var(--card-line)"/>
+          <circle cx="12" cy="66" r="3.5" style="fill:var(--card-line)"/>
+          <circle cx="12" cy="114" r="3.5" style="fill:var(--card-line)"/>
+          <circle cx="12" cy="162" r="3.5" style="fill:var(--card-accent)"/>
+          <circle r="4.5" style="fill:var(--card-accent)"><animateMotion dur="2.4s" repeatCount="indefinite"><mpath href="#socv"/></animateMotion></circle>
+        </svg>
+        <span class="socstep"><i><svg class="ico"><use href="#i-bell"/></svg></i>Alert arrives</span>
+        <span class="socstep"><i><svg class="ico"><use href="#i-bot"/></svg></i>AI agent triages</span>
+        <span class="socstep"><i><svg class="ico"><use href="#i-search"/></svg></i>AI agent investigates</span>
+        <span class="socstep human"><i><svg class="ico"><use href="#i-user-check"/></svg></i>Analyst approves<small>Human</small></span>
+      </div>
+      <div class="socstat" data-h="soc-stat"><span class="n">70%</span><span class="d">of large SOCs will pilot AI agents by 2028<b class="tag">Gartner</b></span></div>
+    </div>
+
+  </div>
+  <span class="more"><svg class="ico"><use href="#i-chevron-right"/></svg>Click to build</span>
+  <footer class="sf"><span class="src">Sources: CSA and Strata Identity (2026); OWASP (Dec 2025); OX Security via CSA (Apr 2026); IBM Cost of a Data Breach (2026); Gartner (2026).</span><span class="pg">Beyond Agent Identity · 1</span></footer>
+  <div class="notes"><ul>
+    <li>Across analysts, standards bodies and practitioners, five themes keep coming up in 2026.</li>
+    <li>Four are questions about our own agents: who it is, what it's doing, what it plugs into, and where it all is.</li>
+    <li>Click: the fifth turns it around. AI agents now help defend at machine speed, with analysts supervising.</li>
+    <li>Click: this deck goes deep on the first two, identity and runtime guardrails.</li>
+  </ul></div>
+</section>
+
+<!-- ===================== SLIDE 2 · THEME 1 · AGENT IDENTITY ===================== -->
+<section class="slide" id="slide-2" data-ch="Theme 1 · Agent identity">
+  <header class="sh"><span class="kicker"><b>02</b> · Theme 1 · Agent identity</span><span class="track"></span></header>
+  <h2 class="title">Agents act for the business, so each needs its own identity</h2>
+  <p class="lede">Probably the biggest theme. Identity is what makes an agent an accountable actor. Hover for the evidence.</p>
+  <div class="body">
+    <svg class="wires" width="1176" height="512" viewBox="0 0 1176 512" aria-hidden="true">
+      <path class="p-faint" d="M136 120 L1084 120"/>
+      <g class="b" data-s="1">
+        <path id="idl" class="p-idn draw" data-s="1" pathLength="1" d="M136 120 L1084 120"/>
+        <circle r="5" class="dot-idn"><animateMotion dur="3.4s" repeatCount="indefinite"><mpath href="#idl"/></animateMotion></circle>
+        <circle r="5" class="dot-idn"><animateMotion dur="3.4s" begin="-1.7s" repeatCount="indefinite"><mpath href="#idl"/></animateMotion></circle>
+      </g>
+    </svg>
+
+    <span class="capline tag" style="top:0">Why it matters · what an agent's own identity gives the business</span>
+    <div class="idanchor" data-h="id-anchor"><span class="disc2"><svg class="ico"><use href="#i-bot"/></svg><span class="idtag"><svg class="ico"><use href="#i-id-card"/></svg>ID</span></span><b>Every agent</b><span class="s">a first-class identity</span></div>
+    <div class="idnode b" data-s="1" style="left:244px; --dl:0.15s" data-h="id-owner"><span class="nd"><svg class="ico"><use href="#i-user-check"/></svg></span><b>An owner</b><span class="s">A named human answers for it</span></div>
+    <div class="idnode b" data-s="1" style="left:454px; --dl:0.35s" data-h="id-creds"><span class="nd"><svg class="ico"><use href="#i-key-round"/></svg></span><b>Its own credentials</b><span class="s">Short-lived, no static keys</span></div>
+    <div class="idnode b" data-s="1" style="left:664px; --dl:0.55s" data-h="id-least"><span class="nd"><svg class="ico"><use href="#i-gauge"/></svg></span><b>Least privilege</b><span class="s">Only what the task needs</span></div>
+    <div class="idnode b" data-s="1" style="left:874px; --dl:0.75s" data-h="id-trail"><span class="nd"><svg class="ico"><use href="#i-scroll-text"/></svg></span><b>A full trail</b><span class="s">Every action traced to it</span></div>
+    <div class="idnode b" data-s="1" style="left:1084px; --dl:0.95s" data-h="id-kill"><span class="nd"><svg class="ico"><use href="#i-power"/></svg></span><b>A kill switch</b><span class="s">Off in one step, at any time</span></div>
+
+    <span class="capline tag b" data-s="2" style="top:270px">The gap is large, and standards are forming</span>
+    <div class="ev b" data-s="2" style="left:0" data-h="st-18"><span class="n" style="color:var(--idn)">18%</span><span class="d">of security leaders are highly confident their IAM can handle AI agents</span><span class="tag">CSA and Strata · 2026</span></div>
+    <div class="ev b" data-s="2" style="left:282px; --dl:0.12s" data-h="st-54"><span class="n" style="color:var(--thr)">54%</span><span class="d">of organizations had or suspected an AI agent security incident last year</span><span class="tag">Gravitee · Apr 2026</span></div>
+    <div class="ev b" data-s="2" style="left:564px; --dl:0.24s" data-h="st-dbir"><span class="t">Verizon DBIR</span><span class="d">Machine identities are the likely target as agents spread</span><span class="tag">2026 report</span></div>
+    <div class="ev b" data-s="3" style="left:846px; width:330px" data-h="st-nist"><span class="t">NIST NCCoE</span><span class="d">Candidate building blocks for agent identity</span><span class="chips"><span data-h="std-mcp">MCP</span><span data-h="std-oauth">OAuth 2.0/2.1</span><span data-h="std-oidc">OIDC</span><span data-h="std-spiffe">SPIFFE/SPIRE</span><span data-h="std-scim">SCIM</span></span><span class="tag">Concept paper · Feb 2026</span></div>
+  </div>
+  <span class="more"><svg class="ico"><use href="#i-chevron-right"/></svg>Click to build</span>
+  <footer class="sf"><span class="src">Sources: CSA and Strata Identity (2026); Gravitee (Apr 2026); Verizon DBIR 2026 via Token Security; NIST NCCoE concept paper (Feb 2026).</span><span class="pg">Beyond Agent Identity · 2</span></footer>
+  <div class="notes"><ul>
+    <li>Theme 1 is probably the biggest. An agent acts for the business, so it has to be an accountable actor.</li>
+    <li>Click: its own identity gives every agent an owner, short-lived credentials, least privilege, a full trail and a kill switch.</li>
+    <li>Click: few organizations are ready. Only 18% are confident their IAM can handle agents, and over half had an agent incident last year.</li>
+    <li>Click: standards are forming. NIST's NCCoE named MCP, OAuth, OIDC, SPIFFE/SPIRE and SCIM as candidate building blocks.</li>
+  </ul></div>
+</section>
+
+<!-- ===================== SLIDE 3 · THEME 1 · THE MARKET ===================== -->
+<section class="slide" id="slide-3" data-ch="Theme 1 · The market">
+  <header class="sh"><span class="kicker"><b>03</b> · Theme 1 · The market</span><span class="track"></span></header>
+  <h2 class="title">Agent identity is splitting by ecosystem, leaving gaps</h2>
+  <p class="lede">Microsoft and Okta now give AI agents real identities. Each governs mainly its own turf, and the gaps are the opening.</p>
+  <div class="body">
+    <svg class="wires" width="1176" height="512" viewBox="0 0 1176 512" aria-hidden="true">
+      <g class="b" data-s="1">
+        <path id="c1" class="p-mon-dash" style="stroke:var(--idn)" d="M180 334 L180 300"/>
+        <path id="c2" class="p-mon-dash" style="stroke:var(--idn)" d="M588 334 L588 300"/>
+        <path id="c3" class="p-mon-dash" style="stroke:var(--idn)" d="M996 334 L996 300"/>
+        <circle r="4" class="dot-idn"><animateMotion dur="1.6s" repeatCount="indefinite"><mpath href="#c1"/></animateMotion></circle>
+        <circle r="4" class="dot-idn"><animateMotion dur="1.6s" begin="-0.5s" repeatCount="indefinite"><mpath href="#c2"/></animateMotion></circle>
+        <circle r="4" class="dot-idn"><animateMotion dur="1.6s" begin="-1s" repeatCount="indefinite"><mpath href="#c3"/></animateMotion></circle>
+      </g>
+    </svg>
+
+    <div class="zone z-ms" data-h="ms">
+      <div class="zh"><span class="zi"><svg class="ico"><use href="#i-building-2"/></svg></span><div><b>Microsoft Entra Agent ID</b><span class="tag">Walled garden</span></div></div>
+      <span class="lockb" data-h="ms-lock"><svg class="ico"><use href="#i-lock"/></svg></span>
+      <div class="apps" data-h="ms-apps">
+        <div class="app"><svg class="ico"><use href="#i-mail"/></svg>Outlook</div>
+        <div class="app"><svg class="ico"><use href="#i-message-square"/></svg>Teams</div>
+        <div class="app"><svg class="ico"><use href="#i-folder"/></svg>SharePoint</div>
+      </div>
+      <div class="mschips" data-h="ms-agents">
+        <span class="mschip"><svg class="ico"><use href="#i-check"/></svg>Copilot Studio</span>
+        <span class="mschip"><svg class="ico"><use href="#i-check"/></svg>Foundry</span>
+        <span class="mschip"><svg class="ico"><use href="#i-check"/></svg>Agent 365</span>
+      </div>
+      <p class="zfoot"><b>Deep</b>, but Microsoft-only</p>
+    </div>
+
+    <div class="zone z-okta" data-h="okta">
+      <div class="zh"><span class="zi"><svg class="ico"><use href="#i-key-round"/></svg></span><div><b>Okta for AI Agents</b><span class="tag">Cross-app passes</span></div></div>
+      <svg class="spokes" width="360" height="300" viewBox="0 0 360 300" aria-hidden="true">
+        <path id="sp1" class="p-idn" d="M114 138 C 150 138, 160 104, 196 104"/>
+        <path class="p-faint" style="stroke:var(--ink-3)" d="M116 146 C 150 146, 160 152, 196 152"/>
+        <path class="p-faint" style="stroke:var(--ink-3)" d="M114 154 C 150 154, 160 200, 196 200"/>
+        <circle r="4" class="dot-idn"><animateMotion dur="1.5s" repeatCount="indefinite"><mpath href="#sp1"/></animateMotion></circle>
+      </svg>
+      <div class="okhub"><svg class="ico"><use href="#i-key-round"/></svg></div>
+      <span class="okcap tag">Agent SSO</span>
+      <div class="okapp" style="top:84px" data-h="okta-yes">Atlassian<span class="st yes"><svg class="ico"><use href="#i-check"/></svg></span></div>
+      <div class="okapp" style="top:132px" data-h="okta-no">Salesforce<span class="st no"><svg class="ico"><use href="#i-circle-help"/></svg></span></div>
+      <div class="okapp" style="top:180px" data-h="okta-db">Internal DBs<span class="st no"><svg class="ico"><use href="#i-circle-help"/></svg></span></div>
+      <p class="zfoot"><b>Broad</b>, if each app opts in</p>
+    </div>
+
+    <div class="zone z-tail" data-h="tail">
+      <div class="zh"><span class="zi"><svg class="ico"><use href="#i-unplug"/></svg></span><div><b>The long tail</b><span class="tag">Ungoverned</span></div></div>
+      <span class="tp" style="left:18px; top:80px"><svg class="ico"><use href="#i-server"/></svg>MCP servers</span>
+      <span class="tp" style="left:40px; top:117px"><svg class="ico"><use href="#i-terminal"/></svg>Local tools</span>
+      <span class="tp" style="left:18px; top:154px"><svg class="ico"><use href="#i-bot"/></svg>Hermes · OpenClaw</span>
+      <span class="tp" style="left:40px; top:191px"><svg class="ico"><use href="#i-key-round"/></svg>Keys in .env</span>
+      <div class="tstat" data-h="tail-stat"><span class="n">1,862</span><span>MCP servers exposed online</span><span class="tag">119 of 119 · no auth</span></div>
+      <p class="zfoot"><b>No owner</b>, no identity</p>
+    </div>
+
+    <div class="opp b" data-s="1" style="--dl:0.15s" data-h="opp">
+      <span class="tag">The opening</span>
+      <b>One neutral, MCP-native identity layer across all three</b>
+      <span class="sub"><span>Broker via Entra</span><span>One policy</span><span>MCP gateway</span></span>
+    </div>
+
+    <div class="sig b" data-s="2" style="left:0" data-h="sig-funding"><span class="n">$435M</span><span>into agent security and governance, Apr to Sep 2026</span></div>
+    <div class="sig b" data-s="2" style="left:408px; --dl:0.15s" data-h="sig-keycard"><span class="n">$38M</span><span>Keycard's launch round for task-scoped agent tokens</span></div>
+    <div class="sig b" data-s="2" style="left:816px; --dl:0.3s" data-h="sig-ma"><span class="n">~$1B</span><span>Cyera buys Oasis. Cisco is buying Astrix.</span></div>
+  </div>
+  <span class="more"><svg class="ico"><use href="#i-chevron-right"/></svg>Click to build</span>
+  <footer class="sf"><span class="src">Sources: Microsoft Learn; ID Tech Wire (May 2026); Tech Insider (2026); Okta newsroom (Jun 2026); IETF ID-JAG draft 04; Knostic (Jul 2025); Forkast (Sep 2026); SecurityWeek; Pulse 2.0.</span><span class="pg">Beyond Agent Identity · 1</span></footer>
+  <div class="notes"><ul>
+    <li>Theme: enterprises now give AI agents their own identities so they can see and govern them.</li>
+    <li>Microsoft owns its estate. Outlook, Teams and SharePoint only accept Microsoft-issued tokens.</li>
+    <li>Okta is the neutral layer. Agent SSO works where apps adopt its cross-app passes, which is still a draft standard.</li>
+    <li>Click: the long tail of MCP tools and homegrown agents is the opening for a neutral, MCP-native player.</li>
+    <li>Click: money and acquirers are already moving, so timing matters.</li>
+  </ul></div>
+</section>
+
+<!-- ===================== SLIDE 4 · THEME 1 · WHAT IDENTITY SOLVES ===================== -->
+<section class="slide" id="slide-4" data-ch="Theme 1 · What identity solves">
+  <header class="sh"><span class="kicker"><b>04</b> · Theme 1 · What identity solves</span><span class="track"></span></header>
+  <h2 class="title">Agent identity proves who acts, for whom, within what limits</h2>
+  <p class="lede">Alice asks inbox-agent to summarize and reply to today's email. Hover any step for detail.</p>
+  <div class="body">
+    <svg class="wires" width="1176" height="512" viewBox="0 0 1176 512" aria-hidden="true">
+      <path class="p-faint" d="M145 140 C 205 40, 335 40, 395 140"/>
+      <path class="p-faint" d="M715 200 C 655 300, 525 300, 465 200"/>
+      <path class="p-faint" d="M465 140 C 525 40, 653 38, 709 134"/>
+      <path class="p-faint" d="M785 140 C 845 40, 975 40, 1031 140"/>
+      <path class="p-faint" d="M785 200 C 845 300, 985 290, 1023 186"/>
+      <g class="b" data-s="1"><path id="a1" class="p-idn draw" data-s="1" pathLength="1" d="M145 140 C 205 40, 335 40, 395 140"/><path class="tip" marker-end="url(#m-idn)" d="M145 140 C 205 40, 335 40, 395 140"/><path class="hitline" data-h="a1" d="M145 140 C 205 40, 335 40, 395 140"/><circle r="5" class="dot-idn"><animateMotion dur="1.8s" repeatCount="indefinite"><mpath href="#a1"/></animateMotion></circle></g>
+      <g class="b" data-s="2"><path id="a2" class="p-idn draw" data-s="2" pathLength="1" d="M715 200 C 655 300, 525 300, 465 200"/><path class="tip" marker-end="url(#m-idn)" d="M715 200 C 655 300, 525 300, 465 200"/><path class="hitline" data-h="a2" d="M715 200 C 655 300, 525 300, 465 200"/><circle r="5" class="dot-idn"><animateMotion dur="1.8s" repeatCount="indefinite"><mpath href="#a2"/></animateMotion></circle></g>
+      <g class="b" data-s="3"><path id="a3" class="p-idn draw" data-s="3" pathLength="1" d="M465 140 C 525 40, 653 38, 709 134"/><path class="tip" marker-end="url(#m-idn)" d="M465 140 C 525 40, 653 38, 709 134"/><path class="hitline" data-h="a3" d="M465 140 C 525 40, 653 38, 709 134"/><circle r="5" class="dot-idn"><animateMotion dur="1.8s" repeatCount="indefinite"><mpath href="#a3"/></animateMotion></circle></g>
+      <g class="b" data-s="4"><path id="a4" class="p-idn draw" data-s="4" pathLength="1" d="M785 140 C 845 40, 975 40, 1031 140"/><path class="tip" marker-end="url(#m-idn)" d="M785 140 C 845 40, 975 40, 1031 140"/><path class="hitline" data-h="a4" d="M785 140 C 845 40, 975 40, 1031 140"/><circle r="5" class="dot-idn"><animateMotion dur="1.8s" repeatCount="indefinite"><mpath href="#a4"/></animateMotion></circle></g>
+      <g class="b" data-s="5"><path id="a5" class="p-idn draw" data-s="5" pathLength="1" d="M785 200 C 845 300, 985 290, 1023 186"/><path class="tip" marker-end="url(#m-idn)" d="M785 200 C 845 300, 985 290, 1023 186"/><path class="hitline" data-h="a5" d="M785 200 C 845 300, 985 290, 1023 186"/><circle r="5" class="dot-idn"><animateMotion dur="1.8s" repeatCount="indefinite"><mpath href="#a5"/></animateMotion></circle></g>
+    </svg>
+
+    <div class="actor" style="left:110px" data-h="alice"><span class="disc"><svg class="ico"><use href="#i-user-round"/></svg></span><b>Alice</b><span class="tag">Person</span></div>
+    <div class="actor idp" style="left:430px" data-h="okta2"><span class="disc"><svg class="ico"><use href="#i-key-round"/></svg></span><b>Okta</b><span class="tag">Identity provider</span></div>
+    <div class="actor agent" style="left:750px" data-h="agent"><span class="disc"><svg class="ico"><use href="#i-bot"/></svg></span><b>inbox-agent</b><span class="tag">AI agent</span></div>
+    <div class="actor ext" style="left:1066px" data-h="db"><span class="disc"><svg class="ico"><use href="#i-database"/></svg></span><b>Contracts DB</b><span class="tag">Internal data source</span></div>
+
+    <span class="lab b" data-s="1" style="left:270px; top:36px; --dl:0.35s" data-h="a1"><i>1</i>Passkey sign-in</span>
+    <span class="lab b" data-s="2" style="left:590px; top:304px; --dl:0.35s" data-h="a2"><i>2</i>Agent proves itself</span>
+    <span class="lab b" data-s="3" style="left:590px; top:36px; --dl:0.35s" data-h="a3"><i>3</i>Scoped token · 15 min</span>
+    <span class="lab b" data-s="4" style="left:908px; top:36px; --dl:0.35s" data-h="a4"><i>4</i>Query + token</span>
+    <span class="lab b" data-s="5" style="left:908px; top:304px; --dl:0.35s" data-h="a5"><i>5</i>Every query verified</span>
+
+    <span class="gkick tag">What identity now guarantees</span>
+    <div class="gt" style="left:0" data-s="1" data-h="g-person"><span class="gi"><svg class="ico"><use href="#i-fingerprint"/></svg></span>Person<span class="ck"><svg class="ico"><use href="#i-check"/></svg></span></div>
+    <div class="gt" style="left:116px" data-s="2" data-h="g-agent"><span class="gi"><svg class="ico"><use href="#i-bot"/></svg></span>Agent<span class="ck"><svg class="ico"><use href="#i-check"/></svg></span></div>
+    <div class="gt" style="left:232px" data-s="3" data-h="g-consent"><span class="gi"><svg class="ico"><use href="#i-badge-check"/></svg></span>Consent<span class="ck"><svg class="ico"><use href="#i-check"/></svg></span></div>
+    <div class="gt" style="left:348px" data-s="4" data-h="g-limits"><span class="gi"><svg class="ico"><use href="#i-gauge"/></svg></span>Limits<span class="ck"><svg class="ico"><use href="#i-check"/></svg></span></div>
+    <div class="gt" style="left:464px" data-s="5" data-h="g-kill"><span class="gi"><svg class="ico"><use href="#i-ban"/></svg></span>Kill switch<span class="ck"><svg class="ico"><use href="#i-check"/></svg></span></div>
+
+    <div class="ticket b" data-s="4" style="--dl:0.9s" data-h="token">
+      <span class="stub"><span>ACCESS TOKEN</span></span>
+      <dl>
+        <div><dt>sub</dt><dd>alice@acme.com</dd></div>
+        <div><dt>act</dt><dd class="hl">inbox-agent</dd></div>
+        <div><dt>aud</dt><dd>contracts-db</dd></div>
+        <div><dt>scope</dt><dd>contracts.read</dd></div>
+        <div><dt>exp</dt><dd>15 minutes</dd></div>
+      </dl>
+      <span class="seal"><div><span><svg class="ico"><use href="#i-stamp"/></svg>SIGNED<br>BY OKTA</span></div></span>
+    </div>
+    <span class="stamp mon b" id="solved" data-s="6" data-h="solved">Identity: solved</span>
+  </div>
+  <span class="more"><svg class="ico"><use href="#i-chevron-right"/></svg>Click to build</span>
+  <footer class="sf"><span class="src">Sources: Okta Developer (token exchange); IETF RFC 8693 (OAuth token exchange); Microsoft Learn (Entra Agent ID uses the same pattern). Simplified; names fictional.</span><span class="pg">Beyond Agent Identity · 2</span></footer>
+  <div class="notes"><ul>
+    <li>Walk the five hops one click at a time. Point out that no password crosses the wire.</li>
+    <li>Each hop ticks a guarantee: person, agent, consent, limits, kill switch.</li>
+    <li>The token names Alice and the agent, works for one internal database, read-only, and expires in 15 minutes.</li>
+    <li>Close: this is real progress over API keys in config files. Authentication is solved.</li>
+  </ul></div>
+</section>
+
+<!-- ===================== SLIDE 5 · THEME 2 · WHAT IDENTITY MISSES ===================== -->
+<section class="slide" id="slide-5" data-ch="Theme 2 · What identity misses">
+  <header class="sh"><span class="kicker"><b>05</b> · Theme 2 · What identity misses</span><span class="track"></span></header>
+  <h2 class="title">A valid token can still carry a malicious action</h2>
+  <p class="lede">Same flow, one poisoned email, and every identity check still passes. Hover an attack path for a real case.</p>
+  <div class="body">
+    <svg class="wires" width="1176" height="512" viewBox="0 0 1176 512" aria-hidden="true">
+      <path class="p-faint" d="M610 220 L698 220"/>
+      <path class="p-faint" d="M836 220 L908 220"/>
+      <g class="b" data-s="1">
+        <path id="t1" class="p-thr" marker-end="url(#m-thr)" d="M238 40 C 360 40, 410 186, 478 190"/>
+        <circle r="4.5" class="dot-thr"><animateMotion dur="1.7s" repeatCount="indefinite"><mpath href="#t1"/></animateMotion></circle>
+      </g>
+      <g class="b" data-s="1" style="--dl:0.45s">
+        <path id="req1" class="p-ink draw" data-s="1" pathLength="1" d="M610 220 L696 220" style="stroke:var(--ink)"/>
+        <path class="tip" marker-end="url(#m-dark)" d="M610 220 L696 220"/>
+        <circle r="4" class="dot-idn" style="fill:var(--ink)"><animateMotion dur="1.2s" repeatCount="indefinite"><mpath href="#req1"/></animateMotion></circle>
+      </g>
+      <g class="b" data-s="1" style="--dl:1.55s">
+        <path id="req2" class="p-ink draw" data-s="1" pathLength="1" d="M836 220 L906 220" style="stroke:var(--ink)"/>
+        <path class="tip" marker-end="url(#m-dark)" d="M836 220 L906 220"/>
+        <circle r="4" class="dot-idn" style="fill:var(--ink)"><animateMotion dur="1.2s" repeatCount="indefinite"><mpath href="#req2"/></animateMotion></circle>
+      </g>
+      <g class="b" data-s="1" style="--dl:2.45s">
+        <path id="ret3" class="p-thr-solid draw" data-s="1" pathLength="1" d="M956 268 C 952 372, 650 372, 598 272"/>
+        <path class="tip" marker-end="url(#m-thr)" d="M956 268 C 952 372, 650 372, 598 272"/>
+        <path class="hitline" data-h="rows" d="M956 268 C 952 372, 650 372, 598 272"/>
+        <circle r="5" class="dot-thr"><animateMotion dur="1.6s" repeatCount="indefinite"><mpath href="#ret3"/></animateMotion></circle>
+        <circle r="5" class="dot-thr"><animateMotion dur="1.6s" begin="-0.8s" repeatCount="indefinite"><mpath href="#ret3"/></animateMotion></circle>
+      </g>
+      <g class="b" data-s="1" style="--dl:3.1s">
+        <path id="exf3" class="p-thr-solid draw" data-s="1" pathLength="1" d="M540 294 L540 378"/>
+        <path class="tip" marker-end="url(#m-thr)" d="M540 294 L540 378"/>
+        <path class="hitline" data-h="reply" d="M540 294 L540 378"/>
+        <circle r="5" class="dot-thr"><animateMotion dur="0.9s" repeatCount="indefinite"><mpath href="#exf3"/></animateMotion></circle>
+      </g>
+      <g class="b" data-s="2">
+        <path id="t2" class="p-thr" marker-end="url(#m-thr)" d="M238 135 C 350 135, 400 203, 471 204"/>
+        <path id="t3" class="p-thr" marker-end="url(#m-thr)" d="M238 230 C 340 230, 400 220, 469 220"/>
+        <path id="t4" class="p-thr" marker-end="url(#m-thr)" d="M238 325 C 350 325, 400 237, 471 236"/>
+        <path id="t5" class="p-thr" marker-end="url(#m-thr)" d="M238 420 C 360 420, 410 254, 478 250"/>
+        <circle r="4.5" class="dot-thr"><animateMotion dur="1.7s" begin="-0.2s" repeatCount="indefinite"><mpath href="#t2"/></animateMotion></circle>
+        <circle r="4.5" class="dot-thr"><animateMotion dur="1.7s" begin="-0.6s" repeatCount="indefinite"><mpath href="#t3"/></animateMotion></circle>
+        <circle r="4.5" class="dot-thr"><animateMotion dur="1.7s" begin="-1s" repeatCount="indefinite"><mpath href="#t4"/></animateMotion></circle>
+        <circle r="4.5" class="dot-thr"><animateMotion dur="1.7s" begin="-1.4s" repeatCount="indefinite"><mpath href="#t5"/></animateMotion></circle>
+      </g>
+    </svg>
+
+    <div class="threat main b" data-s="1" style="top:14px" data-h="t1"><span class="ti"><svg class="ico"><use href="#i-mail-warning"/></svg></span><span><b>Prompt injection</b><small>Email 23 · Alice's case</small></span></div>
+    <div class="threat b" data-s="2" style="top:109px" data-h="t2"><span class="ti"><svg class="ico"><use href="#i-puzzle"/></svg></span><span><b>Poisoned tools</b><small>Plugins, skills, MCP</small></span></div>
+    <div class="threat b" data-s="2" style="top:204px; --dl:0.12s" data-h="t3"><span class="ti"><svg class="ico"><use href="#i-users"/></svg></span><span><b>Agent-to-agent</b><small>One agent recruits another</small></span></div>
+    <div class="threat b" data-s="2" style="top:299px; --dl:0.24s" data-h="t4"><span class="ti"><svg class="ico"><use href="#i-history"/></svg></span><span><b>Memory poisoning</b><small>Fires on every later run</small></span></div>
+    <div class="threat b" data-s="2" style="top:394px; --dl:0.36s" data-h="t5"><span class="ti"><svg class="ico"><use href="#i-trash-2"/></svg></span><span><b>Destructive overreach</b><small>Allowed, but unwanted</small></span></div>
+
+    <div class="hub" style="left:476px; top:156px; width:128px; height:128px" data-h="hub3"><svg class="ico"><use href="#i-bot"/></svg><b>inbox-agent</b></div>
+    <span class="valid" style="left:540px; top:116px" data-h="tokvalid"><svg class="ico"><use href="#i-shield-check"/></svg>Token valid</span>
+
+    <div class="gate" data-s="1" data-h="gate">
+      <div class="gh"><svg class="ico"><use href="#i-shield-check"/></svg><span class="tag">Identity checks</span></div>
+      <ul>
+        <li>Signature<i><svg class="ico"><use href="#i-check"/></svg></i></li>
+        <li>Audience<i><svg class="ico"><use href="#i-check"/></svg></i></li>
+        <li>Scope<i><svg class="ico"><use href="#i-check"/></svg></i></li>
+        <li>Permission<i><svg class="ico"><use href="#i-check"/></svg></i></li>
+      </ul>
+    </div>
+
+    <div class="appdisc" style="left:956px; top:220px" data-h="db3"><svg class="ico"><use href="#i-database"/></svg></div>
+    <div class="appcap" style="left:1014px; top:186px" data-h="db3"><b>Contracts DB</b><span class="tag">Internal</span><span class="okline b" data-s="1" style="--dl:2.2s"><svg class="ico"><use href="#i-circle-check"/></svg>Query OK</span></div>
+
+    <span class="flowlab b" data-s="1" style="left:756px; top:354px; --dl:2.7s" data-h="rows">12 contracts</span>
+    <span class="flowlab b" data-s="1" style="right:648px; top:328px; --dl:3.2s" data-h="reply">Reply to email 23</span>
+    <div class="outside b" data-s="1" style="--dl:3.4s" data-h="leak"><span class="ti"><svg class="ico"><use href="#i-globe"/></svg></span><span><b>Outside Acme</b><small>review@northwind-legal.co</small></span></div>
+    <span class="stamp thr b" data-s="1" style="left:696px; top:396px; --dl:3.9s" data-h="leak">Data leaked</span>
+
+    <div class="qband b" data-s="3">
+      <span class="q ok" data-h="q-who"><i><svg class="ico"><use href="#i-check"/></svg></i>Who is acting?</span>
+      <span class="q ok" data-h="q-allowed"><i><svg class="ico"><use href="#i-check"/></svg></i>Is it allowed?</span>
+      <span class="q bad" data-h="q-intent"><i><svg class="ico"><use href="#i-x"/></svg></i>Did Alice intend it? Nobody checks</span>
+    </div>
+  </div>
+  <span class="more"><svg class="ico"><use href="#i-chevron-right"/></svg>Click to build</span>
+  <footer class="sf"><span class="src">Sources: EchoLeak (arXiv, 2025); Koi Security and Unit 42 (2026); AppOmni (Nov 2025); SpAIware (Sep 2024); Replit (Jul 2025); UK NCSC (Dec 2025).</span><span class="pg">Beyond Agent Identity · 3</span></footer>
+  <div class="notes"><ul>
+    <li>Same agent, same valid token from slide 2.</li>
+    <li>Click: email 23 carries a hidden instruction. Every identity check passes, the contracts database returns twelve contracts, and the agent puts them in its reply to the outside sender.</li>
+    <li>Click: it's not one exotic attack. Four more paths, each with a real incident. Hover them.</li>
+    <li>Click: identity answers who and whether it's allowed. Nobody checks intent.</li>
+  </ul></div>
+</section>
+
+<!-- ===================== SLIDE 6 · THEME 2 · COPILOT TO AUTOPILOT ===================== -->
+<section class="slide" id="slide-6" data-ch="Theme 2 · Copilot to autopilot">
+  <header class="sh"><span class="kicker"><b>06</b> · Theme 2 · Copilot to autopilot</span><span class="track"></span></header>
+  <h2 class="title">Autopilot needs a runtime monitor that can stop the action</h2>
+  <p class="lede">Same agent, same valid token. A monitor now watches every action. Hover a sensor for detail.</p>
+  <div class="body">
+    <svg class="wires" width="1176" height="512" viewBox="0 0 1176 512" aria-hidden="true">
+      <path d="M340 25 L394 25" class="p-ink" marker-end="url(#m-ink)"/>
+      <g class="b" data-s="1">
+        <rect class="p-mon mrect" data-s="1" x="236" y="92" width="376" height="366" rx="34" style="fill:var(--mon-soft); stroke-dasharray:8 8"/>
+        <path class="p-mon-dash" d="M424 262 L318 180"/>
+        <path class="p-mon-dash" d="M424 262 L530 180"/>
+        <path class="p-mon-dash" d="M424 262 L318 384"/>
+        <path class="p-mon-dash" d="M424 262 L530 384"/>
+      </g>
+      <path class="p-faint" d="M200 272 C 270 272, 300 266, 364 266"/>
+      <path class="p-faint" d="M484 262 L700 262"/>
+      <g class="b" data-s="2">
+        <path id="in4" class="p-thr" marker-end="url(#m-thr)" d="M202 272 C 270 272, 300 266, 364 266"/>
+        <circle r="4.5" class="dot-thr"><animateMotion dur="1.6s" repeatCount="indefinite"><mpath href="#in4"/></animateMotion></circle>
+      </g>
+      <g class="b" data-s="2" style="--dl:0.5s">
+        <path id="out4" class="p-thr-solid draw" data-s="2" pathLength="1" d="M484 262 L580 262"/>
+        <circle r="4.5" class="dot-thr"><animateMotion dur="1.1s" repeatCount="indefinite"><mpath href="#out4"/></animateMotion></circle>
+      </g>
+      <g class="b" data-s="3">
+        <path id="al4" class="p-mon draw" data-s="3" pathLength="1" d="M614 150 L650 150"/>
+        <path class="tip" marker-end="url(#m-mon)" d="M614 150 L650 150"/>
+      </g>
+    </svg>
+
+    <div class="spec" style="left:0; width:338px" data-h="spec-co"><span class="si"><svg class="ico"><use href="#i-user-check"/></svg></span><b>Copilot</b><span>A person approves each step</span></div>
+    <div class="spec auto" style="left:398px; width:360px" data-h="spec-auto"><span class="si"><svg class="ico"><use href="#i-radar"/></svg></span><b>Autopilot</b><span>A monitor reviews every step</span></div>
+
+    <div class="threat main" style="top:244px; width:200px" data-h="email4"><span class="ti"><svg class="ico"><use href="#i-mail-warning"/></svg></span><span><b>Email 23</b><small>Hidden instruction</small></span></div>
+    <div class="threat ghost" style="top:318px; width:200px; height:44px" data-h="more4"><span class="ti" style="width:28px;height:28px"><svg class="ico"><use href="#i-layers"/></svg></span><span><b style="font-size:12.5px">+4 attack paths</b></span></div>
+
+    <span class="mlabel b" data-s="1" style="left:424px; top:92px" data-h="monitor">RUNTIME MONITOR</span>
+    <div class="sensor up b" data-s="1" data-lit="2" style="left:318px; top:120px; --dl:0.1s; --d:0.7s" data-h="s-intent"><span class="sd"><svg class="ico"><use href="#i-target"/></svg></span><b>Task intent</b><span class="v">Mismatch</span></div>
+    <div class="sensor up b" data-s="1" data-lit="2" style="left:530px; top:120px; --dl:0.2s; --d:0.95s" data-h="s-source"><span class="sd"><svg class="ico"><use href="#i-search"/></svg></span><b>Source</b><span class="v">Outside email</span></div>
+    <div class="sensor b" data-s="1" data-lit="2" style="left:318px; top:362px; --dl:0.3s; --d:1.2s" data-h="s-baseline"><span class="sd"><svg class="ico"><use href="#i-activity"/></svg></span><b>Baseline</b><span class="v">First time</span></div>
+    <div class="sensor b" data-s="1" data-lit="2" style="left:530px; top:362px; --dl:0.4s; --d:1.45s" data-h="s-dest"><span class="sd"><svg class="ico"><use href="#i-globe"/></svg></span><b>Destination</b><span class="v">Lookalike</span></div>
+
+    <div class="hub" style="left:368px; top:206px; width:112px; height:112px" data-h="hub4"><svg class="ico"><use href="#i-bot"/></svg><b>inbox-agent</b></div>
+    <span class="valid" style="left:424px; top:328px" data-h="tokvalid"><svg class="ico"><use href="#i-shield-check"/></svg>Token valid</span>
+
+    <div class="barrier b" data-s="2" style="left:612px; top:262px; --dl:1.75s" data-h="hold"><svg class="ico"><use href="#i-ban"/></svg><span class="tag">Hold</span></div>
+
+    <div class="ghostapp" style="left:712px; top:262px" data-h="ghost"><svg class="ico"><use href="#i-database"/></svg></div>
+    <div class="ghostcap" style="left:712px; top:304px"><b>Contracts DB</b>never queried</div>
+
+    <div class="phone b" data-s="3" style="--dl:0.55s" data-h="phone">
+      <span class="ph"><svg class="ico"><use href="#i-smartphone"/></svg>Alice</span>
+      <p>Send contracts to an outside sender?</p>
+      <span class="stack"><span class="btns"><span class="blk">Block</span><span>Allow</span></span><span class="done"><svg class="ico"><use href="#i-circle-check"/></svg>Blocked</span></span>
+    </div>
+    <span class="stamp mon b" id="saved" data-s="3" style="--dl:2.1s" data-h="saved">0 rows leaked</span>
+
+    <div class="geo b" data-s="4" data-h="geordie">
+      <span class="badge tag" data-h="geo-award"><svg class="ico"><use href="#i-trophy"/></svg>RSAC 2026 · Most Innovative Startup</span>
+      <h3>Geordie AI</h3>
+      <span class="meta">London · founded 2025 · $30M Series A</span>
+      <div class="caps">
+        <div class="cap" data-h="g-discover"><span class="ci"><svg class="ico"><use href="#i-scan-eye"/></svg></span><span><b>Discover</b><span>Every agent, everywhere</span></span></div>
+        <div class="cap" data-h="g-map"><span class="ci"><svg class="ico"><use href="#i-map"/></svg></span><span><b>Map</b><span>What each agent can reach</span></span></div>
+        <div class="cap" data-h="g-monitor"><span class="ci"><svg class="ico"><use href="#i-eye"/></svg></span><span><b>Monitor</b><span>How each agent behaves</span></span></div>
+        <div class="cap" data-h="g-constrain"><span class="ci"><svg class="ico"><use href="#i-sliders-horizontal"/></svg></span><span><b>Constrain</b><span>Shape behavior at runtime</span></span></div>
+      </div>
+    </div>
+    <div class="punch b" data-s="5" data-h="punch"><span><span class="w1">Identity says who.</span></span><span><span class="w2">Monitoring says whether.</span></span></div>
+  </div>
+  <span class="more"><svg class="ico"><use href="#i-chevron-right"/></svg>Click to build</span>
+  <footer class="sf"><span class="src">Sources: RSAC (Mar 2026); Geordie AI and Balderton (May 2026); Forkast (Sep 2026). Monitor checks and the alert flow are illustrative.</span><span class="pg">Beyond Agent Identity · 4</span></footer>
+  <div class="notes"><ul>
+    <li>Moving to autopilot means the reviewer changes from a person to a monitor.</li>
+    <li>Click: a runtime monitor sits between the agent and its tools, with sensors for intent, source, baseline and destination.</li>
+    <li>Click: the same email arrives. All four sensors fire and the database query is held before it runs.</li>
+    <li>Click: Alice gets an alert written by the monitor, blocks it, and no data leaves Acme.</li>
+    <li>Click: Geordie AI won RSAC's 2026 Innovation Sandbox building this layer. Click: identity says who, monitoring says whether.</li>
+  </ul></div>
+</section>
+
+</div></div>
+
+<div id="bar">
+  <span id="chap"></span>
+  <div id="prog" aria-label="Slides"></div>
+  <span id="count"></span>
+  <button class="btn" id="prev" aria-label="Previous"><svg class="ico"><use href="#i-chevron-left"/></svg></button>
+  <button class="btn" id="next" aria-label="Next"><span class="lbl">Next</span><svg class="ico"><use href="#i-chevron-right"/></svg></button>
+  <button class="btn" id="ntog" aria-pressed="false"><svg class="ico"><use href="#i-notebook-pen"/></svg><span class="lbl">Notes</span></button>
+  <button class="btn" id="fs" aria-label="Full screen"><svg class="ico"><use href="#i-maximize"/></svg></button>
+</div>
+<aside id="notes" hidden><h6>Speaker notes</h6><div id="notesBody"></div><p class="hint">Tap any shape on the slide for detail.</p></aside>
+<div id="pop" role="tooltip"><div class="pk"></div><div class="pt"></div><ul></ul><div class="ps"></div></div>
+<div id="toast" hidden role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var H = {
+    "hub1": { c: "idn", k: "At the center", t: "The enterprise's AI agents", d: ["Assistants, coding agents and automations acting for the business.", "Themes 1 to 4 are the questions to answer about every one of them."] },
+    "th-1": { c: "idn", k: "Theme 1", t: "Agent identity and least privilege", d: ["Every agent becomes a first-class identity with its own credentials, narrow permissions and a human owner.", "Only 18% of security leaders are highly confident their IAM can handle AI agents."], s: "CSA and Strata Identity, 2026" },
+    "th-2": { c: "thr", k: "Theme 2", t: "Agent hijacking and runtime guardrails", d: ["Once an agent has tools, a prompt injection can trigger real actions.", "OWASP's Agentic Top 10 starts with agent goal hijack, tool misuse, and identity and privilege abuse.", "Defenses include a policy check on every tool call, human approval for irreversible steps, and behavior monitoring."], s: "OWASP GenAI Security Project, Dec 2025" },
+    "th-3": { c: "amb", k: "Theme 3", t: "AI supply chain", d: ["Agents load MCP servers, plugins and skills at runtime, and each one is a new way in.", "A design flaw in the MCP SDK left up to 200,000 instances exposed, across packages with 150M+ downloads.", "Rug pulls are a worry too. A tool that was safe when approved can change later."], s: "OX Security via CSA, Apr 2026" },
+    "th-4": { c: "vio", k: "Theme 4", t: "Shadow AI, data leakage and governance", d: ["You can't secure agents you don't know exist.", "43% of breached organizations reported shadow AI incidents, up from 20% a year earlier.", "92% of organizations with an AI incident lacked proper AI access controls."], s: "IBM Cost of a Data Breach, 2026" },
+    "th-5": { c: "mon", k: "Theme 5", t: "AI as the defender", d: ["AI agents take on alert triage and investigation, so defense can work at machine speed.", "Analysts move from doing the work to supervising it.", "Trust is the open question. Every autonomous action has to be explainable and auditable."] },
+    "soc-flow": { c: "mon", k: "Agentic SOC", t: "Agents do the work, analysts supervise", d: ["AI agents triage alerts and run investigations.", "Analysts tune the agents, check their reasoning and approve high-stakes actions."] },
+    "soc-stat": { c: "mon", k: "Evidence", t: "70% of large SOCs will pilot AI agents", d: ["Gartner expects 70% of large SOCs to pilot AI agents for Tier 1 and Tier 2 work by 2028.", "It also expects only 15% to see measurable gains without structured evaluation."], s: "Gartner, via Help Net Security (Sep 2026)" },
+    "dd-1": { c: "idn", k: "This deck", t: "Theme 1 in depth", d: ["Slide 2: why every agent needs its own identity.", "Slides 3 and 4: who provides it and how it works."] },
+    "dd-2": { c: "thr", k: "This deck", t: "Theme 2 in depth", d: ["Slide 5: a valid token can still carry a hijacked action.", "Slide 6: the runtime monitor that stops it."] },
+
+    "id-anchor": { c: "idn", k: "Theme 1", t: "A first-class identity", d: ["Each agent gets its own lifecycle, credentials and narrowly scoped permissions.", "That makes it an accountable actor the business can govern."] },
+    "id-owner": { c: "idn", k: "Owner", t: "A named human answers for it", d: ["Someone owns each agent from creation to retirement and reviews what it can reach."] },
+    "id-creds": { c: "idn", k: "Credentials", t: "Its own short-lived credentials", d: ["Tokens issued per task that expire in minutes.", "No static API keys sitting in config files."] },
+    "id-least": { c: "idn", k: "Least privilege", t: "Only what the task needs", d: ["Narrow scopes per tool and per task, checked on every call."] },
+    "id-trail": { c: "idn", k: "Audit", t: "Every action traced to the agent", d: ["Logs show which agent acted, for whom, and with what access."] },
+    "id-kill": { c: "idn", k: "Kill switch", t: "Off in one step", d: ["Disable the identity and the agent can't get new tokens. Short-lived ones expire within minutes."] },
+    "st-18": { c: "idn", k: "Readiness", t: "Only 18% are confident", d: ["18% of security leaders report high confidence that their current IAM can handle AI agent identities.", "Survey of 285 IT and security professionals."], s: "CSA and Strata Identity, 2026" },
+    "st-54": { c: "thr", k: "Incidents", t: "54% had an agent incident", d: ["54% of organizations experienced or suspected an AI agent security or data privacy incident in the past 12 months.", "Survey of 750 senior technology leaders, April 2026. The same vendor's December 2025 survey put any incident at 88%."], s: "Gravitee, State of AI Agent Security 2026" },
+    "st-dbir": { c: "idn", k: "Verizon DBIR 2026", t: "Machine identities are in the crosshairs", d: ["Verizon says machine accounts “will likely be the ones leveraged in our potential agentic AI future.”", "Third-party breaches grew 60% and now make up 48% of all breaches, many tied to weak credentials and excess permissions."], s: "Verizon DBIR 2026, via Token Security (May 2026)" },
+    "st-nist": { c: "idn", k: "Standards", t: "NIST NCCoE concept paper", d: ["A proposed project to show how organizations can identify and authorize AI agents. Comments closed April 2, 2026.", "Candidate building blocks: MCP, OAuth 2.0/2.1, OIDC, SPIFFE/SPIRE, SCIM and NGAC."], s: "NIST NCCoE, Feb 2026" },
+    "std-mcp": { c: "idn", k: "Building block", t: "Model Context Protocol", d: ["How agents connect to tools and data. It relies on OAuth and OIDC for access."], s: "NIST NCCoE, Feb 2026" },
+    "std-oauth": { c: "idn", k: "Building block", t: "OAuth 2.0/2.1", d: ["Scoped, delegated access tokens. MCP follows the draft OAuth 2.1."], s: "NIST NCCoE, Feb 2026" },
+    "std-oidc": { c: "idn", k: "Building block", t: "OpenID Connect", d: ["Authentication built on OAuth 2.0."], s: "NIST NCCoE, Feb 2026" },
+    "std-spiffe": { c: "idn", k: "Building block", t: "SPIFFE/SPIRE", d: ["One way to identify and authenticate agent workloads."], s: "NIST NCCoE, Feb 2026" },
+    "std-scim": { c: "idn", k: "Building block", t: "SCIM", d: ["Creates, updates and revokes agent identities across systems."], s: "NIST NCCoE, Feb 2026" },
+
+    "ms": { c: "idn", k: "Platform", t: "Microsoft Entra Agent ID", d: ["Gives each agent its own identity in Entra, created from a blueprint with a named human sponsor.", "Conditional Access and ID Protection can block a risky agent before it gets a token."], s: "Microsoft Learn: Entra Agent ID" },
+    "ms-lock": { c: "idn", k: "Why it's walled", t: "Only Microsoft can mint the key", d: ["Outlook, Teams and SharePoint sit behind Microsoft Graph, which accepts tokens only from Microsoft's identity platform.", "Other vendors can govern around Microsoft 365, but the token always comes from Entra."], s: "Microsoft Learn: Graph authentication basics" },
+    "ms-apps": { c: "idn", k: "Coverage", t: "Deep inside Microsoft 365", d: ["Every agent that reads Outlook, Teams or SharePoint data runs through Entra."], s: "Microsoft Learn" },
+    "ms-agents": { c: "idn", k: "Coverage", t: "Native for Microsoft-built agents", d: ["Governance is deepest for agents built in Copilot Studio, Azure AI Foundry and Agent 365.", "Agent ID is available to all Entra customers. ID Protection for agents will need an Agent 365 license."], s: "Microsoft Learn: Agent ID best practices" },
+    "okta": { c: "idn", k: "Platform", t: "Okta for AI Agents", d: ["Generally available since April 30, 2026. Also governs agents on Bedrock, Entra and Ping.", "Agent SSO (GA Aug 24, 2026) issues signed passes so agents can reach other apps."], s: "ID Tech Wire (May 2026); Tech Insider (2026)" },
+    "okta-yes": { c: "mon", k: "Adopted", t: "Atlassian accepts the pass", d: ["Atlassian shipped Cross App Access for its Rovo MCP server.", "Okta lists 25+ early adopters, including Slack, Zoom and Atlassian (Jun 2026)."], s: "Atlassian engineering blog; Okta newsroom (Jun 2026)" },
+    "okta-no": { c: "idn", k: "Not yet", t: "Each app must opt in", d: ["The pass (ID-JAG) is an IETF draft, version 04, May 2026.", "Until an app accepts it, Okta can't vouch for agents there."], s: "IETF draft-ietf-oauth-identity-assertion-authz-grant-04" },
+    "okta-db": { c: "idn", k: "Gap", t: "Internal data needs a front door", d: ["A few data platforms, such as Supabase, accept the pass.", "Many internal databases still rely on shared logins, so agents need a gateway that trusts the identity provider."], s: "Okta newsroom (Jun 2026)" },
+    "tail": { c: "thr", k: "The long tail", t: "Agents nobody governs", d: ["Homegrown agents such as Hermes, OpenClaw and scripts usually run on static API keys in config files.", "Local MCP servers sit outside OAuth entirely."] },
+    "tail-stat": { c: "thr", k: "Evidence", t: "1,862 MCP servers exposed", d: ["Knostic found 1,862 MCP servers reachable online.", "All 119 it checked by hand answered without authentication."], s: "Knostic, Jul 2025" },
+    "opp": { c: "idn", k: "The opening", t: "One neutral, MCP-native identity layer", d: ["Broker Microsoft 365 tokens through Entra under one policy.", "One agent identity and sponsor across Entra, Okta and Google.", "An MCP gateway that issues task-scoped tokens and keeps secrets out of prompts."] },
+    "sig-funding": { c: "idn", k: "Signal", t: "$435M in five months", d: ["Raised across 12 enterprise agent security and governance rounds, April to September 2026.", "Includes Zenity ($125M), Onyx ($113M), Air ($50M) and Geordie AI ($30M)."], s: "Forkast, Sep 2026" },
+    "sig-keycard": { c: "idn", k: "Signal", t: "Keycard, $38M", d: ["Launched Oct 2025 with an a16z and Boldstart seed and an Acrew Series A.", "Issues task-scoped, identity-bound tokens instead of static keys."], s: "SecurityWeek" },
+    "sig-ma": { c: "idn", k: "Signal", t: "Acquirers are buying in", d: ["Cyera agreed to buy Oasis for about $1B (Jul 2026). Cisco moved to acquire Astrix (May 2026).", "Watch-out: Entra bundles agent identity, so a newcomer must win on reach and MCP depth."], s: "SecurityWeek; Pulse 2.0" },
+
+    "alice": { c: "idn", k: "Person", t: "Alice", d: ["Signs in with a passkey, a private key in her device that can't be phished.", "Let inbox-agent read the contracts database for her, so it can answer contract questions in replies."] },
+    "okta2": { c: "idn", k: "Identity provider", t: "Okta", d: ["Verifies Alice and the agent, checks consent and policy, and signs short-lived tokens.", "The database's data API checks them against Okta's published public keys."] },
+    "agent": { c: "idn", k: "AI agent", t: "inbox-agent", d: ["The model decides. The tool layer holds keys and attaches tokens.", "The model never sees a credential."] },
+    "db": { c: "idn", k: "Internal data source", t: "Contracts DB", d: ["Acme's own contracts database, reached through a data API that trusts Okta.", "It checks the token, then applies Alice's own row-level access."] },
+    "a1": { c: "idn", k: "Step 1", t: "Passkey sign-in", d: ["Okta confirms Alice and returns an ID token signed with its private key."] },
+    "a2": { c: "idn", k: "Step 2", t: "The agent proves itself", d: ["The tool layer signs a short statement with the agent's private key.", "No password or secret crosses the wire."] },
+    "a3": { c: "idn", k: "Step 3", t: "A scoped token", d: ["Issued only after Alice's consent, Acme's policy and a risk check.", "Names Alice and the agent, works only for the contracts database, read-only, expires in 15 minutes."] },
+    "a4": { c: "idn", k: "Step 4", t: "Query with the token", d: ["The data API checks signature, issuer, audience, expiry and scope.", "It runs the query with Alice's access, so the agent sees only what she can."] },
+    "a5": { c: "idn", k: "Step 5", t: "Every query is verified", d: ["The token is checked on every query, not just the first.", "Disable the agent and its next query fails."] },
+    "g-person": { c: "idn", k: "Guarantee", t: "Who the person is", d: ["Passkey sign-in and an Okta-signed ID token."] },
+    "g-agent": { c: "idn", k: "Guarantee", t: "Who the agent is", d: ["Key-based proof. No shared secret to leak or reuse."] },
+    "g-consent": { c: "idn", k: "Guarantee", t: "That it's permitted", d: ["Nothing is issued unless Alice consented and Acme's policy allows it."] },
+    "g-limits": { c: "idn", k: "Guarantee", t: "Exact limits", d: ["One database, read-only, a 15-minute lifetime."] },
+    "g-kill": { c: "idn", k: "Guarantee", t: "Accountability and a kill switch", d: ["Every query is tied to Alice and the agent.", "A named sponsor can switch the agent off."] },
+    "token": { c: "idn", k: "Artifact", t: "The access token", d: ["sub is the person, act is the agent, aud limits it to one database.", "Signed, not encrypted. Change one byte and the signature breaks."] },
+    "solved": { c: "mon", k: "Verdict", t: "Authentication: solved", d: ["No shared secrets. Every action is tied to a person and an agent, scoped, time-limited and revocable.", "What it can't judge is intent. That's the next slide."] },
+
+    "hub3": { c: "idn", k: "AI agent", t: "inbox-agent", d: ["Authenticated, in scope and acting for Alice.", "It reads email 23 like any other text."] },
+    "tokvalid": { c: "idn", k: "Identity", t: "Token valid", d: ["The same genuine 15-minute token from slide 2."] },
+    "t1": { c: "thr", k: "Attack path 1 · Alice's case", t: "Prompt injection", d: ["Hidden text in email 23 asks the agent to pull this year's contracts from the database and put them in its reply.", "Real case: EchoLeak (Jun 2025). One email made Microsoft 365 Copilot leak data with zero clicks."], s: "Reddy and Gujral, EchoLeak (arXiv, 2025)" },
+    "t2": { c: "thr", k: "Attack path 2", t: "Poisoned tools and skills", d: ["A plugin, skill or MCP tool description carries instructions the agent follows.", "Real case: 341 malicious skills found on OpenClaw's ClawHub marketplace (Feb 2026)."], s: "Koi Security; Palo Alto Networks Unit 42" },
+    "t3": { c: "thr", k: "Attack path 3", t: "Agent-to-agent escalation", d: ["A low-privilege agent reads a planted prompt and recruits a more powerful one.", "Real case: ServiceNow Now Assist (Nov 2025), with injection protections switched on."], s: "AppOmni via The Hacker News" },
+    "t4": { c: "thr", k: "Attack path 4", t: "Memory poisoning", d: ["An injected instruction is saved to memory or a skill file and fires on every later run.", "Real case: SpAIware (Sep 2024). Planted ChatGPT memories could leak every future chat."], s: "The Hacker News, Sep 2024" },
+    "t5": { c: "thr", k: "Attack path 5", t: "Destructive overreach", d: ["The agent chases its goal with actions nobody wanted, all inside its permissions.", "Real case: Replit (Jul 2025). An agent deleted a production database during a code freeze."], s: "YourStory, Jul 2025" },
+    "gate": { c: "idn", k: "Identity checks", t: "Every check passes", d: ["Signature, audience, scope and Alice's permission all check out.", "None of them asks where the instruction came from."] },
+    "db3": { c: "idn", k: "Internal data source", t: "The database answers", d: ["To the database, this is a valid, in-scope query from Alice's agent.", "Alice can read these contracts, so it returns them."] },
+    "rows": { c: "thr", k: "Data", t: "12 contracts come back", d: ["Real records, returned under Alice's own access."] },
+    "reply": { c: "thr", k: "Exit", t: "Out through an ordinary reply", d: ["Replying to email is exactly what Alice asked for.", "This reply carries the contracts to the sender's lookalike domain."] },
+    "leak": { c: "thr", k: "Outcome", t: "12 contracts leave Acme", d: ["They land at review@northwind-legal.co, a .co lookalike of a real partner.", "Without monitoring, the first sign may come weeks later."] },
+    "q-who": { c: "mon", k: "Answered", t: "Who is acting?", d: ["Alice, through inbox-agent. Identity proves it."] },
+    "q-allowed": { c: "mon", k: "Answered", t: "Is it allowed?", d: ["Yes. Alice may read these contracts, and the agent may reply to email for her."] },
+    "q-intent": { c: "thr", k: "The blind spot", t: "Nobody checks intent", d: ["No token carries what Alice actually wanted.", "The UK NCSC warns prompt injection may never be fully fixed, so systems must limit the damage."], s: "UK NCSC via TechRadar, Dec 2025" },
+
+    "spec-co": { c: "idn", k: "Copilot", t: "A person approves each step", d: ["Catches what Alice would catch, but doesn't scale.", "After the fiftieth harmless request, people approve on reflex."] },
+    "spec-auto": { c: "mon", k: "Autopilot", t: "A monitor reviews every step", d: ["Sees every action, decides in milliseconds and escalates only the exceptions to people."] },
+    "email4": { c: "thr", k: "Input", t: "Same poisoned email", d: ["Email 23 still carries the hidden instruction."] },
+    "more4": { c: "thr", k: "Input", t: "Four more attack paths", d: ["Poisoned tools, agent-to-agent, memory poisoning and destructive overreach. The monitor watches all of them."] },
+    "hub4": { c: "idn", k: "AI agent", t: "inbox-agent", d: ["Same agent, same permissions, same valid token."] },
+    "monitor": { c: "mon", k: "New layer", t: "Runtime monitor", d: ["Sits between the agent and its tools, for example as an MCP gateway.", "Sees the task, the inputs the agent read and every tool call, and can allow, hold or block."] },
+    "s-intent": { c: "mon", k: "Sensor", t: "Task intent", d: ["Alice asked to summarize and reply. Pulling contracts for an outside sender isn't part of that."] },
+    "s-source": { c: "mon", k: "Sensor", t: "Instruction source", d: ["The instruction came from an outside email, not from Alice."] },
+    "s-baseline": { c: "mon", k: "Sensor", t: "Behavior baseline", d: ["This agent has never bulk-read the contracts database."] },
+    "s-dest": { c: "mon", k: "Sensor", t: "Data destination", d: ["The reply would go to a new domain that mimics a partner's."] },
+    "hold": { c: "thr", k: "Decision", t: "Hold before anything moves", d: ["Query held, agent paused, token revoked.", "Every step is logged with the email that triggered it."] },
+    "ghost": { c: "idn", k: "Internal data source", t: "The database never sees the query", d: ["The monitor stops the query before it runs."] },
+    "phone": { c: "mon", k: "Escalation", t: "Alice decides", d: ["The monitor writes the alert from the real action, so an injected agent can't disguise it.", "Alice blocks it and the email goes to security."] },
+    "saved": { c: "mon", k: "Outcome", t: "0 rows leaked", d: ["Same token, same permissions, no leak."] },
+    "geordie": { c: "mon", k: "Startup", t: "Geordie AI", d: ["Won the RSAC 2026 Innovation Sandbox (Mar 23, 2026). Founded 2025 in London by a team from Darktrace and Snyk.", "Raised a $30M Series A in May 2026 led by Balderton, $36.5M in total."], s: "RSAC; Balderton; Geordie AI" },
+    "geo-award": { c: "mon", k: "Award", t: "RSAC Innovation Sandbox", d: ["The industry's best-known startup contest. Past winners include Axonius, BigID and ProjectDiscovery."], s: "RSAC" },
+    "g-discover": { c: "mon", k: "Capability", t: "Discover", d: ["Finds agents across coding tools, cloud platforms, employee devices and low-code tools, sanctioned or not.", "Owkin found 327% more agents than its own inventory listed."], s: "Geordie AI, May 2026" },
+    "g-map": { c: "mon", k: "Capability", t: "Map", d: ["Shows what each agent can access and the risks it creates."], s: "Balderton, May 2026" },
+    "g-monitor": { c: "mon", k: "Capability", t: "Monitor", d: ["A real-time view of how agents behave while they run."], s: "Balderton, May 2026" },
+    "g-constrain": { c: "mon", k: "Capability", t: "Constrain", d: ["Beam, its runtime suite, uses context engineering to shape and limit agent behavior."], s: "Geordie AI, May 2026" },
+    "punch": { c: "idn", k: "The opening", t: "Identity plus monitoring", d: ["Pair neutral agent identity (slide 1) with runtime monitoring in one control plane across Microsoft, Okta and MCP.", "$435M went into this space from April to September 2026, so the window is open but closing."], s: "Forkast, Sep 2026" }
+  };
+  var COL = { idn: "var(--idn)", thr: "var(--thr)", mon: "var(--mon)", amb: "var(--amb)", vio: "var(--vio)" };
+
+  /* ---------- deck engine ---------- */
+  var stage = document.getElementById("stage");
+  var wrap = document.getElementById("wrap");
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  slides.forEach(function (s, i) {
+    var t = s.querySelector(".track");
+    if (t) t.innerHTML = slides.map(function (_, j) { return j === i ? '<i class="cur"></i>' : "<i></i>"; }).join("");
+    var pg = s.querySelector(".pg");
+    if (pg) pg.textContent = "Beyond Agent Identity · " + (i + 1);
+  });
+  var steps = slides.map(function (s) {
+    var m = 0;
+    s.querySelectorAll("[data-s], [data-lit]").forEach(function (e) {
+      m = Math.max(m, +(e.getAttribute("data-s") || 0), +(e.getAttribute("data-lit") || 0));
+    });
+    return m;
+  });
+  var prog = document.getElementById("prog");
+  slides.forEach(function (s, i) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.setAttribute("aria-label", "Go to slide " + (i + 1));
+    b.innerHTML = "<i><b></b></i>";
+    b.addEventListener("click", function (e) { e.stopPropagation(); go(i, 0); });
+    prog.appendChild(b);
+  });
+  var cur = 0, step = 0;
+  var notesEl = document.getElementById("notes"), notesBody = document.getElementById("notesBody"), ntog = document.getElementById("ntog");
+  var narrowMQ = window.matchMedia("(max-width: 760px)");
+  var reduceMQ = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  function fromHash() {
+    try {
+      var m = /^#slide-(\d)$/.exec(location.hash);
+      return m ? Math.max(0, Math.min(slides.length - 1, +m[1] - 1)) : null;
+    } catch (e) { return null; }
+  }
+  var h0 = fromHash();
+  if (h0 !== null) cur = h0;
+  window.addEventListener("hashchange", function () {
+    var h = fromHash();
+    if (h !== null && h !== cur) go(h, 0);
+  });
+
+  function render() {
+    slides.forEach(function (s, i) { s.classList.toggle("active", i === cur); });
+    var s = slides[cur];
+    s.querySelectorAll("[data-s]").forEach(function (e) { e.classList.toggle("on", +e.getAttribute("data-s") <= step); });
+    s.querySelectorAll("[data-lit]").forEach(function (e) { e.classList.toggle("lit", +e.getAttribute("data-lit") <= step); });
+    s.classList.toggle("has-more", step < steps[cur]);
+    Array.prototype.forEach.call(prog.children, function (b, i) {
+      b.classList.toggle("done", i < cur);
+      var fill = b.querySelector("b");
+      fill.style.width = i < cur ? "100%" : i > cur ? "0%" : (steps[i] ? Math.round((step / steps[i]) * 100) : 100) + "%";
+      if (i === cur && step === steps[i]) fill.style.width = "100%";
+    });
+    document.getElementById("chap").textContent = (cur + 1 < 10 ? "0" : "") + (cur + 1) + " · " + s.getAttribute("data-ch");
+    document.getElementById("count").textContent = (cur + 1) + " / " + slides.length;
+    var n = s.querySelector(".notes");
+    notesBody.innerHTML = n ? n.innerHTML : "";
+    hidePop();
+    try { history.replaceState(null, "", "#slide-" + (cur + 1)); } catch (e) { /* ignore */ }
+  }
+  function go(i, st) { cur = Math.max(0, Math.min(slides.length - 1, i)); step = st; render(); }
+  function next() { if (step < steps[cur]) { step++; render(); } else if (cur < slides.length - 1) { go(cur + 1, 0); } }
+  function prev() { if (step > 0) { step--; render(); } else if (cur > 0) { go(cur - 1, steps[cur - 1]); } }
+  document.getElementById("next").addEventListener("click", next);
+  document.getElementById("prev").addEventListener("click", prev);
+  function setNotes(open) { notesEl.hidden = !open; ntog.setAttribute("aria-pressed", String(open)); }
+  ntog.addEventListener("click", function () { setNotes(notesEl.hidden); });
+
+  /* ---------- full screen ---------- */
+  var toastEl = document.getElementById("toast"), toastT;
+  function toast(msg) { toastEl.textContent = msg; toastEl.hidden = false; clearTimeout(toastT); toastT = setTimeout(function () { toastEl.hidden = true; }, 3200); }
+  function fullscreen() {
+    var no = "Full screen isn't available in this view. Use your browser's full-screen mode instead.";
+    try {
+      if (document.fullscreenElement) { document.exitFullscreen(); return; }
+      var el = document.documentElement;
+      if (!el.requestFullscreen || document.fullscreenEnabled === false) { toast(no); return; }
+      var p = el.requestFullscreen();
+      if (p && p.catch) p.catch(function () { toast(no); });
+    } catch (e) { toast(no); }
+  }
+  document.getElementById("fs").addEventListener("click", fullscreen);
+
+  /* ---------- keyboard ---------- */
+  document.addEventListener("keydown", function (e) {
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    var k = e.key, ae = document.activeElement;
+    var onBtn = ae && ae.matches && ae.matches("button");
+    if (k === "ArrowRight" || k === "PageDown" || (k === " " && !onBtn)) { e.preventDefault(); next(); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); prev(); }
+    else if (k === "Home") { go(0, 0); }
+    else if (k === "End") { go(slides.length - 1, steps[slides.length - 1]); }
+    else if (k === "a" || k === "A") { step = steps[cur]; render(); }
+    else if (k === "r" || k === "R") { step = 0; render(); }
+    else if (k === "n" || k === "N") { setNotes(notesEl.hidden); }
+    else if (k === "f" || k === "F") { fullscreen(); }
+    else if (k === "Escape") { hidePop(); }
+  });
+
+  /* ---------- hover detail ---------- */
+  var pop = document.getElementById("pop");
+  var popK = pop.querySelector(".pk"), popT = pop.querySelector(".pt"), popL = pop.querySelector("ul"), popS = pop.querySelector(".ps");
+  var popFor = null;
+  function showPop(el) {
+    var key = el.getAttribute("data-h"), h = H[key];
+    if (!h) return;
+    popFor = el;
+    pop.style.setProperty("--pc", COL[h.c] || "var(--idn)");
+    popK.textContent = h.k;
+    popT.textContent = h.t;
+    popL.innerHTML = "";
+    h.d.forEach(function (line) { var li = document.createElement("li"); li.textContent = line; popL.appendChild(li); });
+    popS.textContent = h.s ? "Source: " + h.s : "";
+    popS.hidden = !h.s;
+    var r = el.getBoundingClientRect();
+    var pw = pop.offsetWidth, ph = pop.offsetHeight;
+    var x = r.left + r.width / 2 - pw / 2;
+    x = Math.max(10, Math.min(window.innerWidth - pw - 10, x));
+    var y = r.top - ph - 12;
+    if (y < 10) y = r.bottom + 12;
+    if (y + ph > window.innerHeight - 10) y = Math.max(10, window.innerHeight - ph - 10);
+    pop.style.left = x + "px";
+    pop.style.top = y + "px";
+    pop.classList.add("on");
+  }
+  function hidePop() { pop.classList.remove("on"); popFor = null; }
+  function hoverTarget(t) {
+    if (!t || !t.closest) return null;
+    var el = t.closest("[data-h]");
+    if (!el || !stage.contains(el)) return null;
+    if (el.closest(".b:not(.on)")) return null;
+    return el;
+  }
+  stage.addEventListener("pointerover", function (e) {
+    if (e.pointerType && e.pointerType !== "mouse") return;
+    var el = hoverTarget(e.target);
+    if (el === popFor) return;
+    if (!el) { hidePop(); return; }
+    showPop(el);
+  });
+  stage.addEventListener("pointerleave", hidePop);
+  window.addEventListener("resize", hidePop);
+
+  /* clicks advance the build; taps on a shape show its detail */
+  var lastPointer = "mouse";
+  stage.addEventListener("pointerdown", function (e) { lastPointer = e.pointerType || "mouse"; });
+  stage.addEventListener("click", function (e) {
+    if (e.target.closest("a, button")) return;
+    if (lastPointer !== "mouse") {
+      var el = hoverTarget(e.target);
+      if (el) { if (popFor === el) hidePop(); else showPop(el); return; }
+      if (popFor) { hidePop(); return; }
+    }
+    next();
+  });
+  var tx = null;
+  stage.addEventListener("touchstart", function (e) { tx = e.touches[0].clientX; }, { passive: true });
+  stage.addEventListener("touchend", function (e) {
+    if (tx === null) return;
+    var dx = e.changedTouches[0].clientX - tx;
+    tx = null;
+    if (Math.abs(dx) > 50) { hidePop(); if (dx < 0) next(); else prev(); }
+  });
+
+  /* ---------- scaling ---------- */
+  function fit() {
+    if (narrowMQ.matches) {
+      var s1 = wrap.clientWidth / 1280;
+      document.body.style.setProperty("--wrap-h", Math.round(720 * s1) + "px");
+      stage.style.transform = "scale(" + s1 + ")";
+      setNotes(true);
+    } else {
+      document.body.style.removeProperty("--wrap-h");
+      var s2 = Math.min(wrap.clientWidth / 1280, (wrap.clientHeight - 12) / 720);
+      stage.style.transform = "translate(-50%, -50%) scale(" + s2 + ")";
+    }
+    hidePop();
+  }
+  window.addEventListener("resize", fit);
+  if (narrowMQ.addEventListener) narrowMQ.addEventListener("change", function () { setNotes(narrowMQ.matches); fit(); });
+  document.addEventListener("fullscreenchange", function () { setTimeout(fit, 60); });
+
+  fit();
+  if (reduceMQ.matches) { step = steps[cur]; }
+  render();
+})();
+</script>
+
+</body>
+</html>
